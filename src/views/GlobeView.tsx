@@ -1,25 +1,36 @@
+import { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Countdown } from '@/components/ui/Countdown';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { CitySchedulePanel } from '@/components/globe/CitySchedulePanel';
+import { TopContenders } from '@/components/globe/TopContenders';
+import { GlobeFallback2D } from '@/components/globe/GlobeFallback2D';
+import { useStore } from '@/store/useStore';
 import { TOURNAMENT } from '@/data/tournament';
 
+// Code-split the 3D scene so mobile (2D fallback) never downloads three.js.
+const GlobeScene = lazy(() =>
+  import('@/three/GlobeScene').then((m) => ({ default: m.GlobeScene })),
+);
+
 /**
- * Landing view. In the next iteration the central panel becomes a rotating
- * 3D globe with host-city pins; for now it is a styled placeholder so the
- * shell is presentable on its own.
+ * Landing view. The central surface is a rotating 3D globe of host cities;
+ * below 768px it degrades to a 2D map of selectable city chips, since r3f on
+ * phones tanks performance.
  */
 export function GlobeView() {
+  const lowPower = useStore((s) => s.lowPower);
+
   return (
-    <div className="relative mx-auto grid min-h-[calc(100vh-4rem)] max-w-[1600px] grid-cols-1 items-center gap-10 px-4 py-12 sm:px-6 lg:grid-cols-2">
+    <div className="mx-auto grid max-w-[1600px] grid-cols-1 items-stretch gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-10 lg:py-10">
       {/* Copy + countdown */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="z-10 max-w-xl"
+        className="z-10 flex max-w-xl flex-col justify-center"
       >
-        <span className="inline-flex items-center gap-2 rounded-full border border-pitch-600/50 bg-pitch-800/60 px-3 py-1 text-xs font-500 uppercase tracking-widest text-gold-300">
+        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-pitch-600/50 bg-pitch-800/60 px-3 py-1 text-xs font-500 uppercase tracking-widest text-gold-300">
           {TOURNAMENT.hosts.join(' · ')}
         </span>
         <h1 className="mt-5 font-display text-5xl font-700 leading-[0.95] tracking-tight text-offwhite sm:text-6xl">
@@ -28,9 +39,9 @@ export function GlobeView() {
           <span className="text-gradient-gold">forecast honestly.</span>
         </h1>
         <p className="mt-5 text-lg leading-relaxed text-offwhite-dim">
-          GroupStage blends team strength, recent form, and live market wisdom into a
-          probability for every match of {TOURNAMENT.name} — then keeps score of how
-          right it was, in the open.
+          Spin the globe, tap a host city, and follow every match of {TOURNAMENT.name}.
+          GroupStage blends team strength, form, and live market wisdom into a
+          probability for each game — then keeps public score of how right it was.
         </p>
 
         <div className="mt-8">
@@ -51,87 +62,34 @@ export function GlobeView() {
             How the model works
           </Link>
         </div>
+
+        <div className="mt-8">
+          <TopContenders />
+        </div>
       </motion.div>
 
-      {/* Globe placeholder + top-3 panel */}
-      <div className="relative flex flex-col items-center gap-8">
-        <GlobeMotif />
-        <TopContenders />
+      {/* Globe surface */}
+      <div className="relative h-[58vh] min-h-[360px] overflow-hidden rounded-2xl border border-pitch-700/40 bg-[radial-gradient(circle_at_50%_40%,#0a2e1f_0%,#04150f_70%)] lg:h-auto lg:min-h-[78vh]">
+        {lowPower ? (
+          <GlobeFallback2D />
+        ) : (
+          <Suspense fallback={<GlobeLoading />}>
+            <GlobeScene />
+          </Suspense>
+        )}
+        <CitySchedulePanel />
+        <p className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2 text-center text-[11px] text-offwhite-faint">
+          {lowPower ? 'Tap a city to see its matches' : 'Drag to orbit · tap a pin to fly in'}
+        </p>
       </div>
     </div>
   );
 }
 
-/** CSS/SVG stand-in for the 3D globe arriving in the next commit. */
-function GlobeMotif() {
+function GlobeLoading() {
   return (
-    <div className="relative aspect-square w-full max-w-md">
-      <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_35%_30%,#1a4733_0%,#0a2e1f_45%,#04150f_100%)] shadow-[0_0_80px_-10px_rgba(212,164,55,0.25)]" />
-      <motion.svg
-        viewBox="0 0 200 200"
-        className="absolute inset-0 h-full w-full"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 90, ease: 'linear', repeat: Infinity }}
-        aria-hidden="true"
-      >
-        <defs>
-          <radialGradient id="globe-edge" cx="50%" cy="50%" r="50%">
-            <stop offset="80%" stopColor="transparent" />
-            <stop offset="100%" stopColor="rgba(212,164,55,0.18)" />
-          </radialGradient>
-        </defs>
-        <circle cx="100" cy="100" r="96" fill="url(#globe-edge)" />
-        {/* graticule */}
-        {[20, 40, 60, 80].map((r) => (
-          <circle
-            key={r}
-            cx="100"
-            cy="100"
-            r={r}
-            fill="none"
-            stroke="rgba(70,135,106,0.35)"
-            strokeWidth="0.5"
-          />
-        ))}
-        {[...Array(12)].map((_, i) => (
-          <line
-            key={i}
-            x1="100"
-            y1="4"
-            x2="100"
-            y2="196"
-            stroke="rgba(70,135,106,0.25)"
-            strokeWidth="0.5"
-            transform={`rotate(${i * 15} 100 100)`}
-          />
-        ))}
-      </motion.svg>
-    </div>
-  );
-}
-
-/** Top-3 predicted winners — placeholder skeletons until the model exists. */
-function TopContenders() {
-  return (
-    <div className="surface w-full max-w-md p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-600 uppercase tracking-wider text-offwhite-dim">
-          Predicted to lift the trophy
-        </h2>
-        <span className="text-[11px] text-offwhite-faint">model estimate</span>
-      </div>
-      <ul className="space-y-2">
-        {[0, 1, 2].map((i) => (
-          <li key={i} className="flex items-center gap-3">
-            <span className="display-num w-5 text-center text-lg font-700 text-gold-400">
-              {i + 1}
-            </span>
-            <Skeleton className="h-7 w-7 rounded-sm" />
-            <Skeleton className="h-4 flex-1" />
-            <Skeleton className="h-4 w-12" />
-          </li>
-        ))}
-      </ul>
+    <div className="absolute inset-0 grid place-items-center">
+      <div className="h-40 w-40 animate-pulse-glow rounded-full bg-[radial-gradient(circle_at_35%_30%,#1a4733,#04150f)]" />
     </div>
   );
 }

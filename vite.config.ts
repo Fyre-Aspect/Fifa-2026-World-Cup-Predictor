@@ -25,6 +25,8 @@ export default defineConfig({
   build: {
     target: 'es2021',
     sourcemap: false,
+    // three.js + drei is an expected large vendor chunk, loaded on demand.
+    chunkSizeWarningLimit: 1500,
     rollupOptions: {
       output: {
         // Function form so a vendor chunk is only emitted when its packages

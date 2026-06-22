@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { useResponsive } from '@/hooks/useResponsive';
+import { useTournamentData } from '@/hooks/useTournamentData';
 
 /**
  * App shell: sticky header, a flexible main region for the active view, and a
@@ -11,6 +12,8 @@ import { useResponsive } from '@/hooks/useResponsive';
 export function Layout({ children }: { children: ReactNode }) {
   // Side effect: keeps the store's lowPower flag in sync with viewport width.
   useResponsive();
+  // Seeds tournament data into the store (mock now, live API in commit 3).
+  useTournamentData();
 
   return (
     <div className="flex min-h-screen flex-col bg-pitch-950">
