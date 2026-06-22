@@ -52,6 +52,8 @@ export interface AppState {
   debugOpen: boolean;
   /** Reduced 3D for small screens / low-power devices. */
   lowPower: boolean;
+  /** Whether the tournament data is live from the API, bundled sample, or still loading. */
+  dataSource: 'loading' | 'live' | 'mock';
 
   // ---- Actions --------------------------------------------------------
   setTeams: (teams: Record<string, Team>) => void;
@@ -73,6 +75,7 @@ export interface AppState {
   toggleBloom: () => void;
   toggleDebug: () => void;
   setLowPower: (low: boolean) => void;
+  setDataSource: (source: 'loading' | 'live' | 'mock') => void;
 }
 
 export const useStore = create<AppState>((set) => ({
@@ -98,6 +101,7 @@ export const useStore = create<AppState>((set) => ({
   bloomEnabled: false,
   debugOpen: false,
   lowPower: false,
+  dataSource: 'loading',
 
   setTeams: (teams) => set({ teams }),
   setCities: (cities) => set({ cities }),
@@ -142,4 +146,5 @@ export const useStore = create<AppState>((set) => ({
   toggleBloom: () => set((s) => ({ bloomEnabled: !s.bloomEnabled })),
   toggleDebug: () => set((s) => ({ debugOpen: !s.debugOpen })),
   setLowPower: (low) => set({ lowPower: low }),
+  setDataSource: (source) => set({ dataSource: source }),
 }));

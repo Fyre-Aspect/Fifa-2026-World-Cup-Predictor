@@ -1,4 +1,15 @@
+import { useStore } from '@/store/useStore';
+
+const SOURCE_LABEL: Record<'loading' | 'live' | 'mock', { text: string; tone: string }> = {
+  loading: { text: 'Loading data…', tone: 'text-offwhite-faint' },
+  live: { text: 'Live data', tone: 'text-pitch-200' },
+  mock: { text: 'Sample data', tone: 'text-gold-300' },
+};
+
 export function Footer() {
+  const dataSource = useStore((s) => s.dataSource);
+  const source = SOURCE_LABEL[dataSource];
+
   return (
     <footer className="border-t border-pitch-700/40 bg-pitch-950/60 px-4 py-5 text-xs text-offwhite-faint sm:px-6">
       <div className="mx-auto flex max-w-[1600px] flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
@@ -7,8 +18,20 @@ export function Footer() {
           model estimate with real uncertainty. Predictions are shown with confidence
           bands and the model&rsquo;s own running accuracy — never as fact.
         </p>
-        <p className="shrink-0">
-          v0.1 · Open data · <span className="text-offwhite-dim">No affiliation with FIFA</span>
+        <p className="flex shrink-0 items-center gap-3">
+          <span className="inline-flex items-center gap-1.5">
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                dataSource === 'live'
+                  ? 'bg-pitch-300'
+                  : dataSource === 'mock'
+                    ? 'bg-gold-400'
+                    : 'bg-offwhite-faint'
+              }`}
+            />
+            <span className={source.tone}>{source.text}</span>
+          </span>
+          <span>v0.1 · <span className="text-offwhite-dim">No affiliation with FIFA</span></span>
         </p>
       </div>
     </footer>
