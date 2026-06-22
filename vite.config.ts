@@ -27,9 +27,14 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          three: ['three', '@react-three/fiber', '@react-three/drei'],
-          charts: ['recharts'],
+        // Function form so a vendor chunk is only emitted when its packages
+        // are actually part of the graph (commit 1 ships no 3D, so no three
+        // chunk; commit 2 adds it).
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined;
+          if (id.includes('three') || id.includes('@react-three')) return 'three';
+          if (id.includes('recharts') || id.includes('/d3-')) return 'charts';
+          return undefined;
         },
       },
     },
