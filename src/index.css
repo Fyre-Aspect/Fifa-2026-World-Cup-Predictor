@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-pitch-950 text-offwhite font-sans antialiased;
+    margin: 0;
+    overflow-x: hidden;
+  }
+
+  /* Tabular numerals everywhere by default — precision matters in a stats app. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    background: rgba(212, 164, 55, 0.3);
+    color: #f4f1e8;
+  }
+
+  /* Subtle pitch-toned scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #04150f;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1a4733;
+    border-radius: 6px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2a6149;
+  }
+}
+
+@layer components {
+  /* Frosted card surface used across views */
+  .surface {
+    @apply rounded-xl border border-pitch-600/40 bg-pitch-800/60 backdrop-blur-sm;
+  }
+
+  .surface-raised {
+    @apply rounded-xl border border-pitch-600/50 bg-pitch-700/70 shadow-card backdrop-blur-md;
+  }
+
+  /* Skeleton shimmer — used for loading states. Never spinners. */
+  .skeleton {
+    @apply relative overflow-hidden rounded-md bg-pitch-700/50;
+  }
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0 bg-shimmer animate-shimmer;
+    background-size: 200% 100%;
+  }
+
+  .display-num {
+    @apply font-display tabular tracking-tight;
+  }
+}
+
+@layer utilities {
+  .text-gradient-gold {
+    @apply bg-gradient-to-b from-gold-200 to-gold-500 bg-clip-text text-transparent;
+  }
+
+  /* Hover affordance: subtle scale + gold glow */
+  .interactive {
+    @apply transition-transform duration-200 ease-out will-change-transform;
+  }
+  .interactive:hover {
+    @apply scale-[1.02];
+  }
+}
