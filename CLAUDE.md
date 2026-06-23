@@ -3,16 +3,16 @@
 
 _Genouk keeps this section in sync from past Genouk chat digests — don't edit it by hand._
 
-**Last session:** What should be possible is it able to send notifications about the re… (2026-06-23, 2:16:18 p.m.)
+**Last session:** What should be possible is it able to send notifications about the re… (2026-06-23, 2:56:28 p.m.)
 
 **✅ No open threads carried over** — past sessions closed cleanly.
 
 ### Recent sessions (2)
 
 #### What should be possible is it able to send notifications about the re…
-_2026-06-23, 2:16:18 p.m._
+_2026-06-23, 2:56:28 p.m._
 
-Chat covering 2 user requests. • What should be possible is it able to send notifications about the recent game that is happenign in group stage right and like today por vs uzbekistan is playing provide a match score based offf of l… • Show which game is like done and which game is currently ongoing and which game is upcoming with an indicator right and how it is predicted. and have live mathc updates as to what isbeing said
+Chat covering 4 user requests. • What should be possible is it able to send notifications about the recent game that is happenign in group stage right and like today por vs uzbekistan is playing provide a match score based offf of l… • Show which game is like done and which game is currently ongoing and which game is upcoming with an indicator right and how it is predicted. and have live mathc updates as to what isbeing said • some of these groups arent even accurate for the 2026 FIFA world cup I need you to base it off of actual fifa stuff going on right now. • Its halucinating too much belgium and new zealend are not playing plus the score on argential and algerai was 3-0 messi hat trick adn even now the live por vs uzbekistan is wrong in the first 6 min r…
 
 **Files touched:**
 - c:\Users\aamir\Coding\Fifa-2026-World-Cup-Predictor\src\data\squads.ts
@@ -56,6 +56,11 @@ Chat covering 2 user requests. • What should be possible is it able to send no
 - c:\Users\aamir\Coding\Fifa-2026-World-Cup-Predictor\src\components\match\MatchRow.tsx
 - c:\Users\aamir\Coding\Fifa-2026-World-Cup-Predictor\src\components\match\LiveCommentary.tsx
 - c:\Users\aamir\Coding\Fifa-2026-World-Cup-Predictor\src\components\match\LiveNowBanner.tsx
+- c:\Users\aamir\Coding\Fifa-2026-World-Cup-Predictor\src\data\teamReference.ts
+- c:\Users\aamir\Coding\Fifa-2026-World-Cup-Predictor\src\model\eloSeed.ts
+- c:\Users\aamir\Coding\Fifa-2026-World-Cup-Predictor\src\data\mockBracket.verify.test.ts
+- c:\Users\aamir\Coding\Fifa-2026-World-Cup-Predictor\src\data\realResults.ts
+- c:\Users\aamir\Coding\Fifa-2026-World-Cup-Predictor\src\components\layout\Footer.tsx
 
 #### Build a website called GroupStage, an interactive and visually striki…
 _2026-06-23, 1:17:11 p.m._

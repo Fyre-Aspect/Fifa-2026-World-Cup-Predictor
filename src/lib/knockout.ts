@@ -5,7 +5,7 @@ import { predictMatch } from '@/model/predict';
 import { mostLikelyScore, type Scoreline } from '@/model/scoreline';
 
 /**
- * Forward projection of the knockout bracket. The Round of 16 is seeded from the
+ * Forward projection of the knockout bracket. The Round of 32 is seeded from the
  * (projected) group standings — those matches already carry teams — and every
  * later round is simulated: the model predicts each tie, the more probable side
  * advances, and the winners are paired into the next round all the way to the
@@ -28,6 +28,7 @@ export interface ProjectedTie {
 }
 
 export interface ProjectedKnockouts {
+  round32: ProjectedTie[];
   round16: ProjectedTie[];
   quarter: ProjectedTie[];
   semi: ProjectedTie[];
@@ -99,11 +100,20 @@ export function projectKnockouts(
     return { id, stage, kickoff, cityId, homeId, awayId, prediction, scoreline, winnerId, aet };
   }
 
-  // Round of 16 — teams already seeded onto the stored matches.
-  const r16Stored = byStage('round16');
-  const round16 = r16Stored.map((m, i) =>
-    tie(m, `R16-${i + 1}`, 'round16', m.homeTeamId, m.awayTeamId),
+  // Round of 32 — teams already seeded onto the stored matches.
+  const r32Stored = byStage('round32');
+  const round32 = r32Stored.map((m, i) =>
+    tie(m, `R32-${i + 1}`, 'round32', m.homeTeamId, m.awayTeamId),
   );
+
+  // Round of 16 — pair adjacent R32 winners.
+  const r16Stored = byStage('round16');
+  const round16: ProjectedTie[] = [];
+  for (let i = 0; i < 8; i++) {
+    const a = round32[i * 2]?.winnerId ?? null;
+    const b = round32[i * 2 + 1]?.winnerId ?? null;
+    round16.push(tie(r16Stored[i], `R16-${i + 1}`, 'round16', a, b));
+  }
 
   // Quarter-finals — pair adjacent R16 winners.
   const qfStored = byStage('quarter');
@@ -131,6 +141,7 @@ export function projectKnockouts(
       : null;
 
   return {
+    round32,
     round16,
     quarter,
     semi,

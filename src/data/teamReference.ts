@@ -68,6 +68,11 @@ export const TEAM_REFERENCE: Record<string, TeamRef> = {
   UZB: { flagCode: 'uz', primary: '#1eb53a', secondary: '#0099b5' },
   JOR: { flagCode: 'jo', primary: '#007a3d', secondary: '#ce1126' },
   IRQ: { flagCode: 'iq', primary: '#007a3d', secondary: '#ffffff' },
+  BIH: { flagCode: 'ba', primary: '#002395', secondary: '#fecb00' },
+  HAI: { flagCode: 'ht', primary: '#00209f', secondary: '#d21034' },
+  CUW: { flagCode: 'cw', primary: '#002b7f', secondary: '#f9d90f' },
+  CPV: { flagCode: 'cv', primary: '#003893', secondary: '#cf2027' },
+  COD: { flagCode: 'cd', primary: '#007fff', secondary: '#f7d618' },
 };
 
 const DEFAULT_REF: TeamRef = {

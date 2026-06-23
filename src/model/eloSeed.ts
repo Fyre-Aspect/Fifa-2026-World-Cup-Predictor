@@ -63,4 +63,10 @@ export const ELO_SEED: EloRatings = {
   NOR: 1820,
   HUN: 1760,
   CZE: 1780,
+  SCO: 1790,
+  BIH: 1690,
+  HAI: 1545,
+  CUW: 1520,
+  CPV: 1630,
+  COD: 1700,
 };

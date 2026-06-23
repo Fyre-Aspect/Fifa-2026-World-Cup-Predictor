@@ -1,132 +1,49 @@
-import type { Match, MatchScore, MatchStage, MatchStatus } from '@/types/domain';
+import type { Match, MatchScore, MatchStage } from '@/types/domain';
 import { ELO_SEED } from '@/model/eloSeed';
-import { squadGoalFactor } from '@/model/squad';
-import { groupStandings } from '@/lib/standings';
+import { groupStandings, type StandingRow } from '@/lib/standings';
+import { realResultFor } from './realResults';
 import { HOST_CITIES } from './cities';
 
 /**
- * A fully generated mock tournament: eight groups of four playing a real
- * round-robin, plus a knockout tree seeded from the projected group standings.
+ * The real 2026 World Cup as a dataset: the twelve groups of the official final
+ * draw, with actual group-stage results from src/data/realResults.ts, plus a
+ * knockout tree (Round of 32 ➝ final) seeded from the resulting standings.
  *
- * The schedule is anchored to the current time rather than fixed calendar dates,
- * so the app always presents a believable "tournament in progress" — matchdays 1
- * and 2 already played, matchday 3 live or imminent (including Portugal v
- * Uzbekistan kicking off today), and the knockouts still to come. Results for
- * played matches are synthesised deterministically from team strength + squad
- * quality, so the standings are self-consistent with the prediction model.
+ * No scores are invented here. A fixture with a captured real result shows that
+ * result (Portugal v Uzbekistan is live at 4–0); a fixture without one is shown
+ * as upcoming with a model prediction. The schedule is anchored to the current
+ * time so played games sit in the past, the live game is in progress now, and
+ * remaining games are in the future — keeping the live UI working regardless of
+ * when the app is opened. For continuously updating data, wire the football API.
  */
 
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
-/** A match counts as live for this long after kickoff. */
-const LIVE_MS = 110 * 60_000;
-const HOME_ADVANTAGE = 35;
 
-/** Group order matters: it fixes the round-robin pairings (see MATCHDAYS). */
+/** Twelve groups, teams in final-draw order (position 1–4). */
 const GROUP_TEAMS: Record<string, [string, string, string, string]> = {
-  A: ['ARG', 'MEX', 'POL', 'JOR'],
-  B: ['FRA', 'DEN', 'SEN', 'IRQ'],
-  C: ['BRA', 'URU', 'CMR', 'NZL'],
-  D: ['ENG', 'USA', 'TUN', 'IRN'],
-  E: ['ESP', 'CRO', 'JPN', 'CRC'],
-  F: ['POR', 'KOR', 'GHA', 'UZB'],
-  G: ['NED', 'ECU', 'EGY', 'QAT'],
-  H: ['GER', 'BEL', 'SUI', 'NGA'],
+  A: ['MEX', 'RSA', 'KOR', 'CZE'],
+  B: ['CAN', 'BIH', 'QAT', 'SUI'],
+  C: ['BRA', 'MAR', 'HAI', 'SCO'],
+  D: ['USA', 'PAR', 'AUS', 'TUR'],
+  E: ['GER', 'CUW', 'CIV', 'ECU'],
+  F: ['NED', 'JPN', 'SWE', 'TUN'],
+  G: ['BEL', 'EGY', 'IRN', 'NZL'],
+  H: ['ESP', 'CPV', 'KSA', 'URU'],
+  I: ['FRA', 'SEN', 'IRQ', 'NOR'],
+  J: ['ARG', 'ALG', 'AUT', 'JOR'],
+  K: ['POR', 'COD', 'UZB', 'COL'],
+  L: ['ENG', 'CRO', 'GHA', 'PAN'],
 };
 
 const GROUP_LETTERS = Object.keys(GROUP_TEAMS);
 
-/** Round-robin for [a,b,c,d]: each matchday is two pairings by index. */
+/** Round-robin for [a,b,c,d], three matchdays of two fixtures each. */
 const MATCHDAYS: Array<Array<[number, number]>> = [
   [[0, 1], [2, 3]], // MD1
   [[0, 2], [3, 1]], // MD2
-  [[0, 3], [1, 2]], // MD3 — group F's [0,3] is Portugal v Uzbekistan
+  [[0, 3], [1, 2]], // MD3
 ];
-
-// ---- Deterministic result synthesis -----------------------------------
-
-function hash01(s: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return ((h >>> 0) % 100000) / 100000;
-}
-
-function eloExpected(home: string, away: string): number {
-  const eh = (ELO_SEED[home] ?? 1500) + HOME_ADVANTAGE;
-  const ea = ELO_SEED[away] ?? 1500;
-  return 1 / (1 + Math.pow(10, -(eh - ea) / 400));
-}
-
-/** Expected goals for each side — Elo supremacy shaped by squad quality. */
-function expectedGoals(home: string, away: string): { home: number; away: number } {
-  const e = eloExpected(home, away);
-  const base = 2.6;
-  const sup = 0.7;
-  const h = base * (0.5 + sup * (e - 0.5)) * squadGoalFactor(home, away);
-  const a = base * (0.5 - sup * (e - 0.5)) * squadGoalFactor(away, home);
-  return { home: Math.max(0.25, h), away: Math.max(0.25, a) };
-}
-
-function finalScore(id: string, home: string, away: string): MatchScore {
-  const xg = expectedGoals(home, away);
-  const goals = (xgi: number, side: string) =>
-    Math.max(0, Math.round(xgi + (hash01(id + side) - 0.5) * 1.7));
-  return { home: goals(xg.home, 'H'), away: goals(xg.away, 'A') };
-}
-
-function liveScore(home: string, away: string, frac: number): MatchScore {
-  const xg = expectedGoals(home, away);
-  return {
-    home: Math.round(xg.home * frac),
-    away: Math.round(xg.away * frac),
-  };
-}
-
-// ---- Builders ----------------------------------------------------------
-
-interface Building {
-  id: string;
-  stage: MatchStage;
-  group: string | null;
-  home: string | null;
-  away: string | null;
-  kickoffMs: number;
-  cityId: string;
-}
-
-function resolve(b: Building, now: number): Match {
-  let status: MatchStatus = 'scheduled';
-  let score: MatchScore | null = null;
-  let minute: number | null = null;
-
-  if (b.home && b.away) {
-    if (b.kickoffMs + LIVE_MS < now) {
-      status = 'finished';
-      score = finalScore(b.id, b.home, b.away);
-    } else if (b.kickoffMs <= now) {
-      status = 'live';
-      const frac = Math.min(0.98, Math.max(0.05, (now - b.kickoffMs) / LIVE_MS));
-      score = liveScore(b.home, b.away, frac);
-      minute = Math.min(90, Math.round(frac * 90) + 1);
-    }
-  }
-
-  return {
-    id: b.id,
-    stage: b.stage,
-    group: b.group,
-    kickoff: new Date(b.kickoffMs).toISOString(),
-    cityId: b.cityId,
-    homeTeamId: b.home,
-    awayTeamId: b.away,
-    status,
-    score,
-    minute,
-  };
-}
 
 function city(i: number): string {
   return HOST_CITIES[i % HOST_CITIES.length].id;
@@ -136,101 +53,153 @@ function eloSorted(teamIds: readonly string[]): string[] {
   return [...teamIds].sort((a, b) => (ELO_SEED[b] ?? 1500) - (ELO_SEED[a] ?? 1500));
 }
 
+// ---- Knockout seeding --------------------------------------------------
+
+interface Seed {
+  teamId: string;
+  group: string;
+  points: number;
+  gd: number;
+  gf: number;
+}
+
+function toSeed(row: StandingRow, group: string): Seed {
+  return { teamId: row.teamId, group, points: row.points, gd: row.goalDifference, gf: row.goalsFor };
+}
+
+function cmpSeed(a: Seed, b: Seed): number {
+  return (
+    b.points - a.points ||
+    b.gd - a.gd ||
+    b.gf - a.gf ||
+    (ELO_SEED[b.teamId] ?? 1500) - (ELO_SEED[a.teamId] ?? 1500)
+  );
+}
+
 export function buildMockBracket(): Match[] {
   const now = Date.now();
-  const building: Building[] = [];
+  const matches: Match[] = [];
   let cityIdx = 0;
 
-  // ---- Group stage --------------------------------------------------
+  // ---- Group stage: real results where known, otherwise upcoming ----
   GROUP_LETTERS.forEach((letter, g) => {
     const teams = GROUP_TEAMS[letter];
     MATCHDAYS.forEach((pairings, md) => {
       pairings.forEach(([hi, ai], slot) => {
         const home = teams[hi];
         const away = teams[ai];
+        const real = realResultFor(home, away);
 
-        // Matchday timing: MD1 ~9d ago, MD2 ~5d ago, MD3 around now.
         let kickoffMs: number;
-        if (md === 0) kickoffMs = now - 9 * DAY + (g * 5 + slot * 2) * HOUR;
-        else if (md === 1) kickoffMs = now - 5 * DAY + (g * 5 + slot * 2) * HOUR;
-        else kickoffMs = now + (g - 5) * 16 * HOUR + slot * 3 * HOUR;
+        let score: MatchScore | null = null;
+        let status: Match['status'] = 'scheduled';
+        let minute: number | null = null;
 
-        // The headline live game: Portugal v Uzbekistan, in progress right now.
-        if (home === 'POR' && away === 'UZB') kickoffMs = now - 35 * 60_000;
+        if (real?.status === 'live') {
+          status = 'live';
+          score = { home: real.home, away: real.away };
+          minute = real.minute;
+          kickoffMs = now - (real.minute ?? 50) * 60_000;
+        } else if (real?.status === 'finished') {
+          status = 'finished';
+          score = { home: real.home, away: real.away };
+          kickoffMs = now - (md === 0 ? 9 : 4) * DAY + (g * 2 + slot) * HOUR;
+        } else {
+          // No captured result — genuinely upcoming, shown with a prediction.
+          kickoffMs = now + (md + 1) * DAY + (g * 2 + slot) * HOUR;
+        }
 
-        building.push({
+        matches.push({
           id: `G-${letter}${md + 1}-${slot + 1}`,
           stage: 'group',
           group: letter,
-          home,
-          away,
-          kickoffMs,
+          kickoff: new Date(kickoffMs).toISOString(),
           cityId: city(cityIdx++),
+          homeTeamId: home,
+          awayTeamId: away,
+          status,
+          score,
+          minute,
         });
       });
     });
   });
 
-  // ---- Projected qualifiers from current standings ------------------
-  const groupMatches = building.map((b) => resolve(b, now));
-  const first: Record<string, string> = {};
-  const second: Record<string, string> = {};
+  // ---- Projected qualifiers from the standings so far ---------------
+  const winners: Seed[] = [];
+  const runners: Seed[] = [];
+  const thirds: Seed[] = [];
   for (const letter of GROUP_LETTERS) {
     const table = groupStandings(
-      groupMatches.filter((m) => m.group === letter),
+      matches.filter((m) => m.group === letter),
       eloSorted(GROUP_TEAMS[letter]),
     );
-    first[letter] = table[0].teamId;
-    second[letter] = table[1].teamId;
+    winners.push(toSeed(table[0], letter));
+    runners.push(toSeed(table[1], letter));
+    thirds.push(toSeed(table[2], letter));
+  }
+  winners.sort(cmpSeed);
+  runners.sort(cmpSeed);
+  thirds.sort(cmpSeed);
+  const bestThirds = thirds.slice(0, 8);
+
+  // Standard bracket seeding: best seed vs worst, avoiding same-group ties.
+  const seeded = [...winners, ...runners, ...bestThirds];
+  const homes = seeded.slice(0, 16);
+  const aways = seeded.slice(16).reverse();
+  for (let i = 0; i < 16; i++) {
+    if (homes[i].group !== aways[i].group) continue;
+    for (let j = 0; j < 16; j++) {
+      if (j === i) continue;
+      if (homes[i].group !== aways[j].group && homes[j].group !== aways[i].group) {
+        [aways[i], aways[j]] = [aways[j], aways[i]];
+        break;
+      }
+    }
   }
 
-  // ---- Round of 16 (seeded from projected standings) ----------------
-  const R16_PAIRS: Array<[string, string]> = [
-    [first.A, second.B],
-    [first.C, second.D],
-    [first.E, second.F],
-    [first.G, second.H],
-    [first.B, second.A],
-    [first.D, second.C],
-    [first.F, second.E],
-    [first.H, second.G],
-  ];
-  R16_PAIRS.forEach(([home, away], i) => {
-    building.push({
-      id: `R16-${i + 1}`,
-      stage: 'round16',
+  // ---- Round of 32 (projected from current standings) ---------------
+  for (let i = 0; i < 16; i++) {
+    matches.push({
+      id: `R32-${i + 1}`,
+      stage: 'round32',
       group: null,
-      home,
-      away,
-      kickoffMs: now + (5 + Math.floor(i / 2)) * DAY + (i % 2) * 4 * HOUR,
+      kickoff: new Date(now + (5 + Math.floor(i / 4)) * DAY + (i % 2) * 4 * HOUR).toISOString(),
       cityId: city(cityIdx++),
+      homeTeamId: homes[i].teamId,
+      awayTeamId: aways[i].teamId,
+      status: 'scheduled',
+      score: null,
+      minute: null,
     });
-  });
+  }
 
   // ---- Later rounds: teams TBD until the knockouts are projected ----
-  const later: Array<{ id: string; stage: MatchStage; day: number }> = [
-    { id: 'QF-1', stage: 'quarter', day: 11 },
-    { id: 'QF-2', stage: 'quarter', day: 11 },
-    { id: 'QF-3', stage: 'quarter', day: 12 },
-    { id: 'QF-4', stage: 'quarter', day: 12 },
-    { id: 'SF-1', stage: 'semi', day: 15 },
-    { id: 'SF-2', stage: 'semi', day: 16 },
-    { id: 'TP', stage: 'third', day: 18 },
-    { id: 'FIN', stage: 'final', day: 19 },
+  const later: Array<{ prefix: string; stage: MatchStage; count: number; day: number }> = [
+    { prefix: 'R16', stage: 'round16', count: 8, day: 10 },
+    { prefix: 'QF', stage: 'quarter', count: 4, day: 13 },
+    { prefix: 'SF', stage: 'semi', count: 2, day: 16 },
+    { prefix: 'TP', stage: 'third', count: 1, day: 18 },
+    { prefix: 'FIN', stage: 'final', count: 1, day: 19 },
   ];
-  later.forEach((m, i) => {
-    building.push({
-      id: m.id,
-      stage: m.stage,
-      group: null,
-      home: null,
-      away: null,
-      kickoffMs: now + m.day * DAY + (i % 2) * 3 * HOUR,
-      cityId: city(cityIdx++),
-    });
-  });
+  for (const round of later) {
+    for (let i = 0; i < round.count; i++) {
+      matches.push({
+        id: round.count === 1 ? round.prefix : `${round.prefix}-${i + 1}`,
+        stage: round.stage,
+        group: null,
+        kickoff: new Date(now + round.day * DAY + i * 4 * HOUR).toISOString(),
+        cityId: city(cityIdx++),
+        homeTeamId: null,
+        awayTeamId: null,
+        status: 'scheduled',
+        score: null,
+        minute: null,
+      });
+    }
+  }
 
-  return building.map((b) => resolve(b, now));
+  return matches;
 }
 
 export { GROUP_TEAMS, GROUP_LETTERS };

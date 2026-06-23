@@ -12,7 +12,14 @@ import { labelFromScore } from '@/model/scoring';
 import { formatKickoff } from '@/lib/tournament';
 import { StatusDot } from '@/components/match/MatchStatusBadge';
 import { LiveNowBanner } from '@/components/match/LiveNowBanner';
+import { RESULTS_AS_OF } from '@/data/realResults';
 import type { Match, MatchPrediction, Team } from '@/types/domain';
+
+const snapshotDate = new Date(RESULTS_AS_OF).toLocaleDateString(undefined, {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
 
 /**
  * Group Stage tab: a clean card per group with a live standings table and the
@@ -54,9 +61,13 @@ export function GroupStageView() {
           Eight groups, sixteen tickets out
         </h1>
         <p className="mt-3 text-offwhite-dim">
-          Live tables and every fixture. Played games show the result; upcoming games
-          show the model&rsquo;s predicted scoreline. Top two of each group advance to
-          the Round of 16.
+          Live tables and every fixture. Played games show the actual result; upcoming
+          games show the model&rsquo;s predicted scoreline. Top two of each group, plus
+          the eight best third-placed teams, reach the Round of 32.
+        </p>
+        <p className="mt-2 text-xs text-offwhite-faint">
+          Real results captured as a snapshot on {snapshotDate} — not a live feed.
+          Fixtures without a captured result are shown as upcoming.
         </p>
       </motion.header>
 

@@ -37,6 +37,7 @@ export function KnockoutsView() {
   const champion = proj.championId ? teams[proj.championId] : undefined;
 
   const rounds: Array<{ label: string; ties: ProjectedTie[] }> = [
+    { label: STAGE_LABEL.round32, ties: proj.round32 },
     { label: STAGE_LABEL.round16, ties: proj.round16 },
     { label: STAGE_LABEL.quarter, ties: proj.quarter },
     { label: STAGE_LABEL.semi, ties: proj.semi },

@@ -1,13 +1,14 @@
 import type { Match } from '@/types/domain';
+import { realEventsFor } from '@/data/realResults';
 
 /**
- * Synthetic live commentary. The sample data has no real feed, so this generates
- * a deterministic minute-by-minute timeline for a match — kick-off, chances,
- * saves, cards and the goals that make up the scoreline — seeded from the match
- * id so it's stable across renders and simply reveals more as the clock ticks.
- *
- * Goals are pinned to never claim a minute in the future, so the feed always
- * agrees with the score shown in the header.
+ * Match commentary. When real notable events are captured for a fixture (e.g.
+ * Ronaldo's goals in Portugal v Uzbekistan) they are used verbatim; otherwise
+ * the timeline is synthesised deterministically from the match id — kick-off,
+ * chances, saves, cards and the goals that make up the scoreline — so it's
+ * stable across renders and simply reveals more as the clock ticks. Goals are
+ * pinned to never claim a minute in the future, so the feed always agrees with
+ * the score shown in the header.
  */
 
 export type CommentaryType =
@@ -93,6 +94,41 @@ export function matchCommentary(match: Match, homeName: string, awayName: string
 
   const finished = match.status === 'finished';
   const now = finished ? 95 : Math.max(1, match.minute ?? 1);
+
+  // Prefer real captured events when we have them.
+  const real = realEventsFor(match.homeTeamId, match.awayTeamId);
+  if (real) {
+    const events: CommentaryEvent[] = [
+      { id: 'ko', minute: 0, type: 'kickoff', side: 'neutral', text: `We're under way — ${homeName} get the match started against ${awayName}.` },
+    ];
+    real
+      .filter((e) => e.minute <= now)
+      .forEach((e, i) => {
+        const side =
+          e.teamId === match.homeTeamId ? 'home' : e.teamId === match.awayTeamId ? 'away' : 'neutral';
+        events.push({
+          id: `real-${i}`,
+          minute: e.minute,
+          type: e.type === 'info' ? 'info' : 'goal',
+          side,
+          text: e.text,
+        });
+      });
+    if (now >= 45) {
+      events.push({ id: 'ht', minute: 45, type: 'halftime', side: 'neutral', text: 'Half-time whistle. The teams head in for a breather.' });
+    }
+    if (finished && match.score) {
+      events.push({
+        id: 'ft',
+        minute: 90,
+        type: 'fulltime',
+        side: 'neutral',
+        text: `Full time. It finishes ${homeName} ${match.score.home}–${match.score.away} ${awayName}.`,
+      });
+    }
+    return events.sort((a, b) => a.minute - b.minute || a.id.localeCompare(b.id));
+  }
+
   const rand = mulberry32(hashSeed(match.id));
 
   const homeGoals = match.score?.home ?? 0;

@@ -1,9 +1,15 @@
 import { useStore } from '@/store/useStore';
+import { RESULTS_AS_OF } from '@/data/realResults';
+
+const snapshotDate = new Date(RESULTS_AS_OF).toLocaleDateString(undefined, {
+  day: 'numeric',
+  month: 'short',
+});
 
 const SOURCE_LABEL: Record<'loading' | 'live' | 'mock', { text: string; tone: string }> = {
   loading: { text: 'Loading data…', tone: 'text-offwhite-faint' },
   live: { text: 'Live data', tone: 'text-pitch-200' },
-  mock: { text: 'Sample data', tone: 'text-gold-300' },
+  mock: { text: `Results snapshot · ${snapshotDate} (not live)`, tone: 'text-gold-300' },
 };
 
 export function Footer() {
