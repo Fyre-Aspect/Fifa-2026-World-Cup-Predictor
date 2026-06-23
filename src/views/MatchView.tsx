@@ -8,6 +8,8 @@ import { ScorePrediction } from '@/components/model/ScorePrediction';
 import { SquadPanel } from '@/components/model/SquadPanel';
 import { InputBreakdown } from '@/components/model/InputBreakdown';
 import { PostMatchAnalysis } from '@/components/model/PostMatchAnalysis';
+import { LiveCommentary } from '@/components/match/LiveCommentary';
+import { MatchStatusBadge } from '@/components/match/MatchStatusBadge';
 import { buildFormTable } from '@/model/form';
 import { inputBreakdown } from '@/model/predict';
 import { STAGE_LABEL, formatKickoff } from '@/lib/tournament';
@@ -64,10 +66,13 @@ export function MatchView() {
         transition={{ duration: 0.4 }}
         className="mt-3"
       >
-        <p className="text-xs font-600 uppercase tracking-widest text-gold-300">
-          {STAGE_LABEL[match.stage]}
-          {match.group ? ` · Group ${match.group}` : ''}
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-xs font-600 uppercase tracking-widest text-gold-300">
+            {STAGE_LABEL[match.stage]}
+            {match.group ? ` · Group ${match.group}` : ''}
+          </p>
+          <MatchStatusBadge status={match.status} minute={match.minute} />
+        </div>
 
         {/* Scoreline / banner */}
         <div className="relative mt-3 overflow-hidden rounded-2xl border border-pitch-700/40 bg-[radial-gradient(circle_at_50%_20%,#0a2e1f,#04150f)]">
@@ -155,6 +160,13 @@ export function MatchView() {
           )}
         </section>
       </div>
+
+      {/* Live commentary / match timeline */}
+      {(match.status === 'live' || match.status === 'finished') && (
+        <section className="surface mt-4 p-5">
+          <LiveCommentary match={match} homeName={homeName} awayName={awayName} />
+        </section>
+      )}
 
       {/* Post-match analysis */}
       {match.status === 'finished' && match.score && prediction && (

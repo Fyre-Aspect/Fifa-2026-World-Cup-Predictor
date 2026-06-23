@@ -7,7 +7,11 @@ import { cn } from '@/lib/cn';
 import { groupStandings, type StandingRow } from '@/lib/standings';
 import { ELO_SEED } from '@/model/eloSeed';
 import { mostLikelyScore } from '@/model/scoreline';
+import { argmaxOutcome } from '@/model/probability';
+import { labelFromScore } from '@/model/scoring';
 import { formatKickoff } from '@/lib/tournament';
+import { StatusDot } from '@/components/match/MatchStatusBadge';
+import { LiveNowBanner } from '@/components/match/LiveNowBanner';
 import type { Match, MatchPrediction, Team } from '@/types/domain';
 
 /**
@@ -55,6 +59,15 @@ export function GroupStageView() {
           the Round of 16.
         </p>
       </motion.header>
+
+      <LiveNowBanner />
+
+      <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-offwhite-faint">
+        <span className="font-600 uppercase tracking-wide">Key</span>
+        <Legend status="finished" label="Full time" />
+        <Legend status="live" label="Live now" />
+        <Legend status="scheduled" label="Upcoming · predicted score" />
+      </div>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
         {groups.map((g, i) => (
@@ -164,6 +177,15 @@ function GroupCard({
   );
 }
 
+function Legend({ status, label }: { status: Match['status']; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <StatusDot status={status} />
+      {label}
+    </span>
+  );
+}
+
 function FixtureRow({
   match,
   teams,
@@ -176,18 +198,30 @@ function FixtureRow({
   const home = match.homeTeamId ? teams[match.homeTeamId] : undefined;
   const away = match.awayTeamId ? teams[match.awayTeamId] : undefined;
   const predicted = prediction ? mostLikelyScore(prediction.xgHome, prediction.xgAway) : null;
+  const scheduled = match.status === 'scheduled';
+
+  // How it was predicted: did the pre-match favourite match the result?
+  const predMark =
+    match.status === 'finished' && match.score && prediction
+      ? argmaxOutcome(prediction) === labelFromScore(match.score)
+      : null;
 
   return (
     <Link
       to={`/match/${match.id}`}
+      title={
+        predicted && !scheduled ? `Predicted ${predicted.home}–${predicted.away}` : undefined
+      }
       className="group flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-pitch-700/40"
     >
+      <StatusDot status={match.status} className="mt-0.5" />
       <span className="min-w-0 flex-1 truncate text-right text-offwhite-dim group-hover:text-offwhite">
         {home?.name ?? 'TBD'}
       </span>
       <span className="shrink-0">
-        {match.status === 'scheduled' ? (
-          <span className="display-num rounded bg-pitch-900/60 px-1.5 py-0.5 text-[11px] text-offwhite-faint">
+        {scheduled ? (
+          <span className="display-num inline-flex items-center gap-1 rounded bg-pitch-900/60 px-1.5 py-0.5 text-[11px] text-offwhite-faint">
+            <span className="text-[8px] font-700 uppercase tracking-wide text-gold-300/80">P</span>
             {predicted ? `${predicted.home}–${predicted.away}` : 'vs'}
           </span>
         ) : (
@@ -204,12 +238,21 @@ function FixtureRow({
       <span className="min-w-0 flex-1 truncate text-offwhite-dim group-hover:text-offwhite">
         {away?.name ?? 'TBD'}
       </span>
-      <span className="hidden shrink-0 text-[10px] text-offwhite-faint sm:block">
-        {match.status === 'live'
-          ? `${match.minute ?? ''}'`
-          : match.status === 'scheduled'
-            ? formatKickoff(match.kickoff)
-            : 'FT'}
+      <span className="hidden w-14 shrink-0 text-right text-[10px] text-offwhite-faint sm:block">
+        {match.status === 'live' ? (
+          <span className="text-red-300">{match.minute ?? ''}&rsquo;</span>
+        ) : scheduled ? (
+          formatKickoff(match.kickoff)
+        ) : predMark != null ? (
+          <span
+            title={predMark ? 'Model called it right' : 'Model called it wrong'}
+            className={predMark ? 'text-emerald-300' : 'text-offwhite-faint'}
+          >
+            {predMark ? '✓ pred' : '✗ pred'}
+          </span>
+        ) : (
+          'FT'
+        )}
       </span>
     </Link>
   );

@@ -3,16 +3,16 @@
 
 _Genouk keeps this section in sync from past Genouk chat digests — don't edit it by hand._
 
-**Last session:** What should be possible is it able to send notifications about the re… (2026-06-23, 1:55:37 p.m.)
+**Last session:** What should be possible is it able to send notifications about the re… (2026-06-23, 2:16:18 p.m.)
 
 **✅ No open threads carried over** — past sessions closed cleanly.
 
 ### Recent sessions (2)
 
 #### What should be possible is it able to send notifications about the re…
-_2026-06-23, 1:55:37 p.m._
+_2026-06-23, 2:16:18 p.m._
 
-User asked: What should be possible is it able to send notifications about the recent game that is happenign in group stage right and like today por vs uzbekistan is playing provide a match score based offf of l…
+Chat covering 2 user requests. • What should be possible is it able to send notifications about the recent game that is happenign in group stage right and like today por vs uzbekistan is playing provide a match score based offf of l… • Show which game is like done and which game is currently ongoing and which game is upcoming with an indicator right and how it is predicted. and have live mathc updates as to what isbeing said
 
 **Files touched:**
 - c:\Users\aamir\Coding\Fifa-2026-World-Cup-Predictor\src\data\squads.ts
@@ -51,6 +51,11 @@ User asked: What should be possible is it able to send notifications about the r
 - c:\Users\aamir\Coding\Fifa-2026-World-Cup-Predictor\src\components\layout\Layout.tsx
 - c:\Users\aamir\Coding\Fifa-2026-World-Cup-Predictor\src\views\DashboardView.tsx
 - c:\Users\aamir\Coding\Fifa-2026-World-Cup-Predictor\src\components\model\WeightEvolution.tsx
+- c:\Users\aamir\Coding\Fifa-2026-World-Cup-Predictor\src\lib\commentary.ts
+- c:\Users\aamir\Coding\Fifa-2026-World-Cup-Predictor\src\components\match\MatchStatusBadge.tsx
+- c:\Users\aamir\Coding\Fifa-2026-World-Cup-Predictor\src\components\match\MatchRow.tsx
+- c:\Users\aamir\Coding\Fifa-2026-World-Cup-Predictor\src\components\match\LiveCommentary.tsx
+- c:\Users\aamir\Coding\Fifa-2026-World-Cup-Predictor\src\components\match\LiveNowBanner.tsx
 
 #### Build a website called GroupStage, an interactive and visually striki…
 _2026-06-23, 1:17:11 p.m._
