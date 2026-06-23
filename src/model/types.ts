@@ -9,6 +9,8 @@ export interface Outcome {
 export interface InputDistributions {
   elo: Outcome | null;
   form: Outcome | null;
+  /** Squad quality (player ratings × league strength). */
+  squad: Outcome | null;
   polymarket: Outcome | null;
   books: Outcome | null;
 }

@@ -11,6 +11,7 @@ function presentInputs(inputs: InputDistributions, weights: ModelWeights): Weigh
   const out: WeightedInput[] = [];
   if (inputs.elo) out.push({ outcome: inputs.elo, weight: weights.elo });
   if (inputs.form) out.push({ outcome: inputs.form, weight: weights.form });
+  if (inputs.squad) out.push({ outcome: inputs.squad, weight: weights.squad });
   if (inputs.polymarket) out.push({ outcome: inputs.polymarket, weight: weights.polymarket });
   if (inputs.books) out.push({ outcome: inputs.books, weight: weights.books });
   return out;
@@ -44,7 +45,7 @@ export function blendInputs(inputs: InputDistributions, weights: ModelWeights): 
  * never claims a single hard number — this band is shown alongside it.
  */
 export function predictionInterval(inputs: InputDistributions): number {
-  const present = [inputs.elo, inputs.form, inputs.polymarket, inputs.books].filter(
+  const present = [inputs.elo, inputs.form, inputs.squad, inputs.polymarket, inputs.books].filter(
     (o): o is Outcome => o != null,
   );
   const m = present.length;
@@ -58,7 +59,7 @@ export function predictionInterval(inputs: InputDistributions): number {
       return acc + Math.sqrt(variance);
     }, 0) / 3;
 
-  const sparsity = ((4 - m) / 4) * 0.05;
+  const sparsity = ((5 - m) / 5) * 0.05;
   const spread = meanStdev * 0.9;
   const raw = 0.03 + sparsity + spread;
   return Math.round(clamp01(raw) * 1000) / 1000;

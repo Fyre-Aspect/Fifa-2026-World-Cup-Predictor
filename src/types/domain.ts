@@ -94,10 +94,12 @@ export interface MatchPrediction {
   generatedAt: string;
 }
 
-/** The four weighted model inputs. Always sum to 1. */
+/** The five weighted model inputs. Always sum to 1. */
 export interface ModelWeights {
   elo: number;
   form: number;
+  /** Squad quality from player ratings + the leagues they play in. */
+  squad: number;
   polymarket: number;
   books: number;
 }

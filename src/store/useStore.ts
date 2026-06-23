@@ -9,12 +9,13 @@ import type {
   WeightSnapshot,
 } from '@/types/domain';
 
-/** Default starting weights per the spec: Elo 30 / form 15 / market 30 / books 25. */
+/** Default starting weights: Elo 25 / form 12 / squad 18 / market 25 / books 20. */
 export const DEFAULT_WEIGHTS: ModelWeights = {
-  elo: 0.3,
-  form: 0.15,
-  polymarket: 0.3,
-  books: 0.25,
+  elo: 0.25,
+  form: 0.12,
+  squad: 0.18,
+  polymarket: 0.25,
+  books: 0.2,
 };
 
 const EMPTY_ACCURACY: ModelAccuracy = {
