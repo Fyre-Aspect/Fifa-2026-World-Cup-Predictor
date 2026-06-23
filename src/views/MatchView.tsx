@@ -83,7 +83,7 @@ export function MatchView() {
           </div>
 
           <div className="flex items-center justify-between gap-4 border-t border-pitch-700/40 bg-pitch-950/60 px-5 py-4">
-            <TeamSide name={homeName} flag={home?.flagCode} align="left" />
+            <TeamSide name={homeName} flag={home?.flagCode} teamId={home?.id} align="left" />
             <ScoreCenter
               status={match.status}
               minute={match.minute}
@@ -91,7 +91,7 @@ export function MatchView() {
               awayScore={match.score?.away}
               kickoff={match.kickoff}
             />
-            <TeamSide name={awayName} flag={away?.flagCode} align="right" />
+            <TeamSide name={awayName} flag={away?.flagCode} teamId={away?.id} align="right" />
           </div>
         </div>
       </motion.div>
@@ -158,19 +158,29 @@ export function MatchView() {
 function TeamSide({
   name,
   flag,
+  teamId,
   align,
 }: {
   name: string;
   flag: string | undefined;
+  teamId: string | undefined;
   align: 'left' | 'right';
 }) {
-  return (
-    <div className={`flex flex-1 items-center gap-3 ${align === 'right' ? 'flex-row-reverse text-right' : ''}`}>
+  const inner = (
+    <>
       <Flag code={flag} title={name} className="h-7 w-10 shrink-0" />
-      <span className="font-display text-lg font-600 leading-tight text-offwhite sm:text-2xl">
+      <span className="font-display text-lg font-600 leading-tight text-offwhite transition-colors group-hover:text-gold-200 sm:text-2xl">
         {name}
       </span>
-    </div>
+    </>
+  );
+  const classes = `group flex flex-1 items-center gap-3 ${align === 'right' ? 'flex-row-reverse text-right' : ''}`;
+  return teamId ? (
+    <Link to={`/team/${teamId}`} className={classes}>
+      {inner}
+    </Link>
+  ) : (
+    <div className={classes}>{inner}</div>
   );
 }
 

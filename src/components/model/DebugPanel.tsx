@@ -18,8 +18,8 @@ const ROWS: Array<{ key: keyof ModelWeights; label: string }> = [
 export function DebugPanel() {
   const open = useStore((s) => s.debugOpen);
   const toggle = useStore((s) => s.toggleDebug);
-  const weights = useStore((s) => s.weights);
-  const setWeights = useStore((s) => s.setWeights);
+  const weights = useStore((s) => s.baseWeights);
+  const setWeights = useStore((s) => s.setBaseWeights);
 
   const update = (key: keyof ModelWeights, next: number) => {
     const clamped = Math.max(0, Math.min(0.95, next));
@@ -45,7 +45,7 @@ export function DebugPanel() {
         >
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-sm font-600 uppercase tracking-wider text-gold-300">
-              Model weights
+              Starting weights
             </h3>
             <button
               onClick={toggle}
@@ -84,7 +84,9 @@ export function DebugPanel() {
             >
               Reset to defaults
             </button>
-            <p className="text-[11px] text-offwhite-faint">Re-runs the model live</p>
+            <p className="text-[11px] text-offwhite-faint">
+              Learning nudges these as results land
+            </p>
           </div>
         </motion.div>
       )}

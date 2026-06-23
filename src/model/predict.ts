@@ -1,4 +1,10 @@
-import type { Match, MatchPrediction, MatchStage, ModelWeights } from '@/types/domain';
+import type {
+  Match,
+  MatchPrediction,
+  MatchStage,
+  ModelWeights,
+  WeightSnapshot,
+} from '@/types/domain';
 import {
   DEFAULT_ELO_CONFIG,
   applyResult,
@@ -14,6 +20,7 @@ import { outcomeFromEloDiff } from './probability';
 import { buildFormTable, formSignal, type FormEntry } from './form';
 import { buildPrediction } from './blend';
 import { labelFromScore, type ScoredPrediction } from './scoring';
+import { gradientStep } from './learn';
 import type { InputDistributions, MarketTable, Outcome } from './types';
 
 /** Small bonus for the designated home side; WC venues are largely neutral. */
@@ -130,38 +137,58 @@ export function predictAll(
   return out;
 }
 
-export interface ReplayResult {
+export interface RunModelResult {
   /** Pre-match predictions for finished matches; current-context for the rest. */
   predictions: Record<string, MatchPrediction>;
   /** Pre-match prediction vs actual, for honest Brier / log-loss tracking. */
   scored: ScoredPrediction[];
   /** Final ratings after replaying every finished result. */
   ratings: EloRatings;
+  /** Weights after learning from every finished result. */
+  weights: ModelWeights;
+  /** Weight trajectory: the base, then one snapshot per finished match. */
+  history: WeightSnapshot[];
 }
 
-interface ReplayMarket {
+interface RunMarket {
   books?: MarketTable;
   polymarket?: MarketTable;
 }
 
+interface RunOptions {
+  /** Step size for post-match weight learning. 0 disables learning. */
+  learningRate?: number;
+}
+
 /**
- * Replay the tournament chronologically so every finished match is predicted
- * with the ratings and form available *before* kickoff — no peeking at the
- * result it's being scored against. Upcoming matches are predicted with the
- * latest (post-replay) context. This is what makes the dashboard's accuracy
- * honest, and it's the same loop the learning step extends in commit 5.
+ * The full model pass. Replays the tournament chronologically so every finished
+ * match is predicted with the ratings, form, and weights available *before*
+ * kickoff — no peeking at the result it's scored against. After each finished
+ * match it (a) records the score for accuracy and (b) nudges the weights toward
+ * whichever input was more correct. Upcoming matches are then predicted with the
+ * learned weights and latest ratings.
+ *
+ * Fully deterministic from (matches, baseWeights, market), so it can be re-run
+ * wholesale without incremental state drifting out of sync.
  */
-export function replayPredictions(
+export function runModel(
   matches: Match[],
-  weights: ModelWeights,
-  market: ReplayMarket = {},
+  baseWeights: ModelWeights,
+  market: RunMarket = {},
+  options: RunOptions = {},
   config: EloConfig = DEFAULT_ELO_CONFIG,
-): ReplayResult {
+): RunModelResult {
+  const learningRate = options.learningRate ?? 0.04;
   const ordered = [...matches].sort((a, b) => Date.parse(a.kickoff) - Date.parse(b.kickoff));
+
   let ratings: EloRatings = { ...ELO_SEED };
+  let weights: ModelWeights = { ...baseWeights };
   const finished: Match[] = [];
   const predictions: Record<string, MatchPrediction> = {};
   const scored: ScoredPrediction[] = [];
+  const history: WeightSnapshot[] = [
+    { matchId: null, weights: { ...weights }, brier: null, timestamp: ordered[0]?.kickoff ?? new Date().toISOString() },
+  ];
 
   for (const match of ordered) {
     const ctx: PredictContext = {
@@ -184,6 +211,18 @@ export function replayPredictions(
     }
 
     if (match.status === 'finished' && match.score && match.homeTeamId && match.awayTeamId) {
+      // Learn from the result using the pre-match input distributions.
+      if (learningRate > 0 && pred) {
+        const inputs = inputBreakdown(match, ctx);
+        const step = gradientStep(weights, inputs, labelFromScore(match.score), learningRate);
+        weights = step.weights;
+        history.push({
+          matchId: match.id,
+          weights: { ...weights },
+          brier: step.brier,
+          timestamp: match.kickoff,
+        });
+      }
       ratings = applyResult(
         ratings,
         {
@@ -200,7 +239,55 @@ export function replayPredictions(
     }
   }
 
-  return { predictions, scored, ratings };
+  return { predictions, scored, ratings, weights, history };
+}
+
+export interface RatingPoint {
+  step: number;
+  rating: number;
+  label: string;
+}
+
+/**
+ * The Elo trajectory for one team: its rating after each finished match it
+ * played, replayed from the seed so cross-results are reflected. Drives the
+ * team page's strength chart.
+ */
+export function teamRatingTrajectory(
+  matches: Match[],
+  teamId: string,
+  config: EloConfig = DEFAULT_ELO_CONFIG,
+): RatingPoint[] {
+  const ordered = matches
+    .filter((m) => m.status === 'finished' && m.score && m.homeTeamId && m.awayTeamId)
+    .sort((a, b) => Date.parse(a.kickoff) - Date.parse(b.kickoff));
+
+  let ratings: EloRatings = { ...ELO_SEED };
+  const points: RatingPoint[] = [
+    { step: 0, rating: ratingOf(ratings, teamId, config), label: 'Start' },
+  ];
+  let step = 0;
+
+  for (const m of ordered) {
+    ratings = applyResult(
+      ratings,
+      {
+        homeId: m.homeTeamId as string,
+        awayId: m.awayTeamId as string,
+        homeGoals: (m.score as { home: number }).home,
+        awayGoals: (m.score as { away: number }).away,
+        importance: STAGE_IMPORTANCE[m.stage],
+        neutral: true,
+      },
+      config,
+    );
+    if (m.homeTeamId === teamId || m.awayTeamId === teamId) {
+      step += 1;
+      points.push({ step, rating: Math.round(ratingOf(ratings, teamId, config)), label: m.id });
+    }
+  }
+
+  return points;
 }
 
 /** Expose which inputs a match's prediction drew on (for the detail view). */

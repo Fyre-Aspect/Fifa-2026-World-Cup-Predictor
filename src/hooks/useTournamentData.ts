@@ -26,6 +26,12 @@ export function useTournamentData(): void {
     queryFn: ({ signal }) => fetchTournamentData(signal),
     staleTime: STALE_TIME.fixtures,
     retry: 1,
+    // Poll for live scores only while a match is in progress.
+    refetchInterval: (q) => {
+      const data = q.state.data;
+      const live = data?.matches.some((m) => m.status === 'live');
+      return live ? STALE_TIME.liveScores : false;
+    },
   });
 
   useEffect(() => {

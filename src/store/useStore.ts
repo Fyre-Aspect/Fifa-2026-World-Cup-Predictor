@@ -37,6 +37,9 @@ export interface AppState {
 
   // ---- Predictions & model -------------------------------------------
   predictions: Record<string, MatchPrediction>;
+  /** User-tunable starting weights (the debug panel edits these). */
+  baseWeights: ModelWeights;
+  /** Effective weights after post-match learning — what predictions use. */
   weights: ModelWeights;
   /** Chronological log of weight changes, oldest first. */
   weightHistory: WeightSnapshot[];
@@ -66,7 +69,9 @@ export interface AppState {
   setPrediction: (prediction: MatchPrediction) => void;
   setPredictions: (predictions: Record<string, MatchPrediction>) => void;
 
+  setBaseWeights: (weights: ModelWeights) => void;
   setWeights: (weights: ModelWeights) => void;
+  setWeightHistory: (history: WeightSnapshot[]) => void;
   pushWeightSnapshot: (snapshot: WeightSnapshot) => void;
   setAccuracy: (accuracy: ModelAccuracy) => void;
   setRatings: (ratings: Record<string, number>) => void;
@@ -87,6 +92,7 @@ export const useStore = create<AppState>((set) => ({
   matches: [],
 
   predictions: {},
+  baseWeights: { ...DEFAULT_WEIGHTS },
   weights: { ...DEFAULT_WEIGHTS },
   weightHistory: [
     {
@@ -126,13 +132,16 @@ export const useStore = create<AppState>((set) => ({
   setPredictions: (predictions) =>
     set((s) => ({ predictions: { ...s.predictions, ...predictions } })),
 
+  setBaseWeights: (baseWeights) => set({ baseWeights }),
   setWeights: (weights) => set({ weights }),
+  setWeightHistory: (weightHistory) => set({ weightHistory }),
   pushWeightSnapshot: (snapshot) =>
     set((s) => ({ weightHistory: [...s.weightHistory, snapshot] })),
   setAccuracy: (accuracy) => set({ accuracy }),
   setRatings: (ratings) => set({ ratings }),
   resetModel: () =>
     set({
+      baseWeights: { ...DEFAULT_WEIGHTS },
       weights: { ...DEFAULT_WEIGHTS },
       weightHistory: [
         {

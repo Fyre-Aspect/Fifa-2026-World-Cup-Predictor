@@ -4,6 +4,7 @@ import { Footer } from './Footer';
 import { useResponsive } from '@/hooks/useResponsive';
 import { useTournamentData } from '@/hooks/useTournamentData';
 import { useModel } from '@/hooks/useModel';
+import { useLiveClock } from '@/hooks/useLiveClock';
 import { DebugPanel } from '@/components/model/DebugPanel';
 
 /**
@@ -18,6 +19,8 @@ export function Layout({ children }: { children: ReactNode }) {
   useTournamentData();
   // Runs the prediction model over the loaded fixtures.
   useModel();
+  // Advances the sample live-match clock (no-op with real live data).
+  useLiveClock();
 
   return (
     <div className="flex min-h-screen flex-col bg-pitch-950">
