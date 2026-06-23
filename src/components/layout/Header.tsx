@@ -3,9 +3,12 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/cn';
 import { useStore } from '@/store/useStore';
 import { Logo } from './Logo';
+import { NotificationBell } from './NotificationBell';
 
 const NAV = [
   { to: '/', label: 'Globe', end: true },
+  { to: '/groups', label: 'Groups', end: false },
+  { to: '/knockouts', label: 'Knockouts', end: false },
   { to: '/bracket', label: 'Bracket', end: false },
   { to: '/model', label: 'Model', end: false },
 ] as const;
@@ -50,12 +53,13 @@ export function Header() {
 
         <div className="flex items-center gap-3">
           <HonestyBadge />
+          <NotificationBell />
           <DebugToggle />
         </div>
       </div>
 
       {/* Mobile nav */}
-      <nav className="flex items-center gap-1 border-t border-pitch-700/40 px-4 py-2 sm:hidden">
+      <nav className="flex items-center gap-1 overflow-x-auto border-t border-pitch-700/40 px-4 py-2 sm:hidden">
         {NAV.map((item) => (
           <NavLink
             key={item.to}
@@ -63,7 +67,7 @@ export function Header() {
             end={item.end}
             className={({ isActive }) =>
               cn(
-                'flex-1 rounded-md px-3 py-1.5 text-center text-sm font-500 transition-colors',
+                'shrink-0 whitespace-nowrap rounded-md px-3 py-1.5 text-center text-sm font-500 transition-colors',
                 isActive
                   ? 'bg-pitch-700/60 text-offwhite'
                   : 'text-offwhite-dim',

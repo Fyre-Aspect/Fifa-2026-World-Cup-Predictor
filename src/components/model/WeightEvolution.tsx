@@ -12,6 +12,7 @@ import type { WeightSnapshot } from '@/types/domain';
 const SERIES: Array<{ key: keyof WeightSnapshot['weights']; label: string; color: string }> = [
   { key: 'elo', label: 'Elo', color: '#d4a437' },
   { key: 'form', label: 'Form', color: '#6fa98e' },
+  { key: 'squad', label: 'Squad', color: '#c98bdb' },
   { key: 'polymarket', label: 'Polymarket', color: '#6fa9d6' },
   { key: 'books', label: 'Books', color: '#cfcabb' },
 ];
@@ -34,6 +35,7 @@ export function WeightEvolution({ history }: { history: WeightSnapshot[] }) {
     step: i,
     elo: snap.weights.elo * 100,
     form: snap.weights.form * 100,
+    squad: snap.weights.squad * 100,
     polymarket: snap.weights.polymarket * 100,
     books: snap.weights.books * 100,
   }));

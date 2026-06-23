@@ -5,6 +5,7 @@ import { useResponsive } from '@/hooks/useResponsive';
 import { useTournamentData } from '@/hooks/useTournamentData';
 import { useModel } from '@/hooks/useModel';
 import { useLiveClock } from '@/hooks/useLiveClock';
+import { useMatchNotifications } from '@/hooks/useMatchNotifications';
 import { DebugPanel } from '@/components/model/DebugPanel';
 
 /**
@@ -21,6 +22,8 @@ export function Layout({ children }: { children: ReactNode }) {
   useModel();
   // Advances the sample live-match clock (no-op with real live data).
   useLiveClock();
+  // Raises browser notifications when opted-in matches go live or finish.
+  useMatchNotifications();
 
   return (
     <div className="flex min-h-screen flex-col bg-pitch-950">

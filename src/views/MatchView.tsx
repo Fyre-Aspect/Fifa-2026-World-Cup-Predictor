@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { Flag } from '@/components/ui/Flag';
 import { PredictionBars } from '@/components/model/PredictionBars';
+import { ScorePrediction } from '@/components/model/ScorePrediction';
+import { SquadPanel } from '@/components/model/SquadPanel';
 import { InputBreakdown } from '@/components/model/InputBreakdown';
 import { PostMatchAnalysis } from '@/components/model/PostMatchAnalysis';
 import { buildFormTable } from '@/model/form';
@@ -117,6 +119,28 @@ export function MatchView() {
               No prediction yet — both teams need to be determined.
             </p>
           )}
+        </section>
+
+        {/* Predicted scoreline */}
+        <section className="surface p-5 lg:col-span-2">
+          <h2 className="mb-4 text-sm font-600 uppercase tracking-wider text-offwhite-dim">
+            Predicted score
+          </h2>
+          {prediction ? (
+            <ScorePrediction prediction={prediction} homeLabel={homeName} awayLabel={awayName} />
+          ) : (
+            <p className="text-sm text-offwhite-dim">Available once both teams are set.</p>
+          )}
+        </section>
+      </div>
+
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-5">
+        {/* Squad strength + key players */}
+        <section className="surface p-5 lg:col-span-3">
+          <h2 className="mb-4 text-sm font-600 uppercase tracking-wider text-offwhite-dim">
+            Squad strength &amp; key players
+          </h2>
+          <SquadPanel home={home} away={away} />
         </section>
 
         {/* Input breakdown */}

@@ -60,6 +60,8 @@ export interface AppState {
   lowPower: boolean;
   /** Whether the tournament data is live from the API, bundled sample, or still loading. */
   dataSource: 'loading' | 'live' | 'mock';
+  /** Whether the user has opted into browser match notifications. */
+  notificationsEnabled: boolean;
 
   // ---- Actions --------------------------------------------------------
   setTeams: (teams: Record<string, Team>) => void;
@@ -85,6 +87,7 @@ export interface AppState {
   toggleDebug: () => void;
   setLowPower: (low: boolean) => void;
   setDataSource: (source: 'loading' | 'live' | 'mock') => void;
+  setNotificationsEnabled: (enabled: boolean) => void;
 }
 
 export const useStore = create<AppState>((set) => ({
@@ -113,6 +116,7 @@ export const useStore = create<AppState>((set) => ({
   debugOpen: false,
   lowPower: false,
   dataSource: 'loading',
+  notificationsEnabled: false,
 
   setTeams: (teams) => set({ teams }),
   setCities: (cities) => set({ cities }),
@@ -162,4 +166,5 @@ export const useStore = create<AppState>((set) => ({
   toggleDebug: () => set((s) => ({ debugOpen: !s.debugOpen })),
   setLowPower: (low) => set({ lowPower: low }),
   setDataSource: (source) => set({ dataSource: source }),
+  setNotificationsEnabled: (notificationsEnabled) => set({ notificationsEnabled }),
 }));

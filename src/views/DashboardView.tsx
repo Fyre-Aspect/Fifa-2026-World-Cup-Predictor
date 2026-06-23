@@ -12,6 +12,7 @@ import type { ModelWeights } from '@/types/domain';
 const WEIGHT_LABELS: Record<keyof ModelWeights, string> = {
   elo: 'Team strength (Elo)',
   form: 'Recent form',
+  squad: 'Squad quality (players)',
   polymarket: 'Polymarket',
   books: 'Bookmaker consensus',
 };
