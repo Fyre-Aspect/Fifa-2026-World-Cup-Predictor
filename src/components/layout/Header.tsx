@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/cn';
+import { useStore } from '@/store/useStore';
 import { Logo } from './Logo';
 
 const NAV = [
@@ -49,6 +50,7 @@ export function Header() {
 
         <div className="flex items-center gap-3">
           <HonestyBadge />
+          <DebugToggle />
         </div>
       </div>
 
@@ -73,6 +75,31 @@ export function Header() {
         ))}
       </nav>
     </header>
+  );
+}
+
+/** Opens the model weight tuning panel. */
+function DebugToggle() {
+  const toggle = useStore((s) => s.toggleDebug);
+  const open = useStore((s) => s.debugOpen);
+  return (
+    <button
+      onClick={toggle}
+      title="Tune model weights"
+      aria-label="Tune model weights"
+      className={cn(
+        'interactive grid h-9 w-9 place-items-center rounded-lg border transition-colors',
+        open
+          ? 'border-gold-400/50 bg-gold-400/10 text-gold-300'
+          : 'border-pitch-600/50 bg-pitch-800/60 text-offwhite-dim hover:text-offwhite',
+      )}
+    >
+      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+        <path d="M4 7h10M18 7h2M4 17h2M10 17h10" strokeLinecap="round" />
+        <circle cx="16" cy="7" r="2.2" />
+        <circle cx="8" cy="17" r="2.2" />
+      </svg>
+    </button>
   );
 }
 

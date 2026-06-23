@@ -1,0 +1,66 @@
+import type { EloRatings } from './elo';
+
+/**
+ * A starting Elo snapshot keyed by FIFA trigram, approximating each side's
+ * strength from roughly the last four years of international results (in the
+ * spirit of eloratings.net, early 2026). The live engine then nudges these as
+ * tournament results come in, so the snapshot is a seed, not a fixed truth.
+ *
+ * Teams missing here fall back to EloConfig.defaultRating.
+ */
+export const ELO_SEED: EloRatings = {
+  ARG: 2103,
+  FRA: 2068,
+  ESP: 2049,
+  ENG: 2025,
+  BRA: 2018,
+  POR: 2004,
+  NED: 1985,
+  BEL: 1948,
+  ITA: 1945,
+  GER: 1960,
+  CRO: 1930,
+  URU: 1915,
+  COL: 1902,
+  MAR: 1888,
+  SUI: 1860,
+  USA: 1835,
+  MEX: 1825,
+  SEN: 1840,
+  JPN: 1842,
+  DEN: 1872,
+  KOR: 1790,
+  IRN: 1788,
+  AUS: 1760,
+  ECU: 1820,
+  PER: 1772,
+  CHI: 1790,
+  PAR: 1740,
+  NGA: 1812,
+  EGY: 1790,
+  CIV: 1780,
+  CMR: 1772,
+  GHA: 1748,
+  TUN: 1740,
+  ALG: 1772,
+  RSA: 1720,
+  CAN: 1760,
+  CRC: 1700,
+  PAN: 1690,
+  JAM: 1660,
+  KSA: 1690,
+  QAT: 1700,
+  UZB: 1700,
+  JOR: 1660,
+  IRQ: 1660,
+  NZL: 1590,
+  POL: 1820,
+  SWE: 1810,
+  SRB: 1830,
+  AUT: 1840,
+  TUR: 1815,
+  UKR: 1810,
+  NOR: 1820,
+  HUN: 1760,
+  CZE: 1780,
+};

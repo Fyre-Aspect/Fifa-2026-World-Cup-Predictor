@@ -41,6 +41,8 @@ export interface AppState {
   /** Chronological log of weight changes, oldest first. */
   weightHistory: WeightSnapshot[];
   accuracy: ModelAccuracy;
+  /** Current Elo ratings by team id, after replaying finished results. */
+  ratings: Record<string, number>;
 
   // ---- UI / navigation state -----------------------------------------
   selectedCityId: string | null;
@@ -67,6 +69,7 @@ export interface AppState {
   setWeights: (weights: ModelWeights) => void;
   pushWeightSnapshot: (snapshot: WeightSnapshot) => void;
   setAccuracy: (accuracy: ModelAccuracy) => void;
+  setRatings: (ratings: Record<string, number>) => void;
   resetModel: () => void;
 
   selectCity: (id: string | null) => void;
@@ -94,6 +97,7 @@ export const useStore = create<AppState>((set) => ({
     },
   ],
   accuracy: { ...EMPTY_ACCURACY },
+  ratings: {},
 
   selectedCityId: null,
   selectedMatchId: null,
@@ -126,6 +130,7 @@ export const useStore = create<AppState>((set) => ({
   pushWeightSnapshot: (snapshot) =>
     set((s) => ({ weightHistory: [...s.weightHistory, snapshot] })),
   setAccuracy: (accuracy) => set({ accuracy }),
+  setRatings: (ratings) => set({ ratings }),
   resetModel: () =>
     set({
       weights: { ...DEFAULT_WEIGHTS },
