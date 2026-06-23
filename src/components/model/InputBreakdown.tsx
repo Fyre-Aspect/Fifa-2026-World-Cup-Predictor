@@ -5,6 +5,7 @@ import { formatProbability, formatWeight } from '@/lib/format';
 const ROWS: Array<{ key: keyof InputDistributions; weightKey: keyof ModelWeights; label: string }> = [
   { key: 'elo', weightKey: 'elo', label: 'Elo' },
   { key: 'form', weightKey: 'form', label: 'Form' },
+  { key: 'squad', weightKey: 'squad', label: 'Squad' },
   { key: 'polymarket', weightKey: 'polymarket', label: 'Polymarket' },
   { key: 'books', weightKey: 'books', label: 'Books' },
 ];

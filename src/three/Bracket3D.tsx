@@ -29,9 +29,10 @@ export function Bracket3D() {
   const predictions = useStore((s) => s.predictions);
 
   const { placed, tiers, halfWidth } = useMemo(() => {
-    // Group present stages, ordered group -> final.
+    // Knockout tree only — the group stage has its own tab.
     const byStage = new Map<MatchStage, Match[]>();
     for (const m of matches) {
+      if (m.stage === 'group') continue;
       const arr = byStage.get(m.stage) ?? [];
       arr.push(m);
       byStage.set(m.stage, arr);

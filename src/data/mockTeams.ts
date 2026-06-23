@@ -1,28 +1,72 @@
-import type { Team } from '@/types/domain';
+import type { ConfederationCode, Team } from '@/types/domain';
+import { teamRefFor } from './teamReference';
 
 /**
- * A 16-team mock field used until the football-data API is wired (commit 3).
- * Colors are approximate kit colors used for the procedural 3D jerseys; flag
- * codes are flagcdn.com codes (ISO 3166-1 alpha-2, plus gb-eng for England).
+ * A 32-team mock field — eight groups of four — used until the football-data
+ * API is wired. Kit colors and flag codes come from the shared team reference
+ * table; group letters drive the round-robin fixtures in mockBracket.ts.
  */
-export const MOCK_TEAMS: Team[] = [
-  { id: 'ARG', name: 'Argentina', flagCode: 'ar', confederation: 'CONMEBOL', colors: { primary: '#6C9BD2', secondary: '#ffffff' }, group: 'A' },
-  { id: 'FRA', name: 'France', flagCode: 'fr', confederation: 'UEFA', colors: { primary: '#1f3c88', secondary: '#ffffff' }, group: 'B' },
-  { id: 'BRA', name: 'Brazil', flagCode: 'br', confederation: 'CONMEBOL', colors: { primary: '#fedd00', secondary: '#009739' }, group: 'C' },
-  { id: 'ENG', name: 'England', flagCode: 'gb-eng', confederation: 'UEFA', colors: { primary: '#f4f4f4', secondary: '#cf142b' }, group: 'D' },
-  { id: 'ESP', name: 'Spain', flagCode: 'es', confederation: 'UEFA', colors: { primary: '#c60b1e', secondary: '#f1bf00' }, group: 'E' },
-  { id: 'POR', name: 'Portugal', flagCode: 'pt', confederation: 'UEFA', colors: { primary: '#da291c', secondary: '#006847' }, group: 'F' },
-  { id: 'NED', name: 'Netherlands', flagCode: 'nl', confederation: 'UEFA', colors: { primary: '#f36c21', secondary: '#ffffff' }, group: 'G' },
-  { id: 'GER', name: 'Germany', flagCode: 'de', confederation: 'UEFA', colors: { primary: '#1a1a1a', secondary: '#d00000' }, group: 'H' },
-  { id: 'BEL', name: 'Belgium', flagCode: 'be', confederation: 'UEFA', colors: { primary: '#e30613', secondary: '#fdda24' }, group: 'A' },
-  { id: 'CRO', name: 'Croatia', flagCode: 'hr', confederation: 'UEFA', colors: { primary: '#d81e05', secondary: '#ffffff' }, group: 'B' },
-  { id: 'URU', name: 'Uruguay', flagCode: 'uy', confederation: 'CONMEBOL', colors: { primary: '#5ba3d9', secondary: '#ffffff' }, group: 'C' },
-  { id: 'USA', name: 'United States', flagCode: 'us', confederation: 'CONCACAF', colors: { primary: '#0a3161', secondary: '#b31942' }, group: 'D' },
-  { id: 'MEX', name: 'Mexico', flagCode: 'mx', confederation: 'CONCACAF', colors: { primary: '#006847', secondary: '#ce1126' }, group: 'E' },
-  { id: 'MAR', name: 'Morocco', flagCode: 'ma', confederation: 'CAF', colors: { primary: '#c1272d', secondary: '#006233' }, group: 'F' },
-  { id: 'JPN', name: 'Japan', flagCode: 'jp', confederation: 'AFC', colors: { primary: '#1b2a6b', secondary: '#ffffff' }, group: 'G' },
-  { id: 'SEN', name: 'Senegal', flagCode: 'sn', confederation: 'CAF', colors: { primary: '#00853f', secondary: '#fdef42' }, group: 'H' },
+interface TeamMeta {
+  id: string;
+  name: string;
+  confederation: ConfederationCode;
+  group: string;
+}
+
+const TEAM_META: TeamMeta[] = [
+  // Group A
+  { id: 'ARG', name: 'Argentina', confederation: 'CONMEBOL', group: 'A' },
+  { id: 'MEX', name: 'Mexico', confederation: 'CONCACAF', group: 'A' },
+  { id: 'POL', name: 'Poland', confederation: 'UEFA', group: 'A' },
+  { id: 'JOR', name: 'Jordan', confederation: 'AFC', group: 'A' },
+  // Group B
+  { id: 'FRA', name: 'France', confederation: 'UEFA', group: 'B' },
+  { id: 'DEN', name: 'Denmark', confederation: 'UEFA', group: 'B' },
+  { id: 'SEN', name: 'Senegal', confederation: 'CAF', group: 'B' },
+  { id: 'IRQ', name: 'Iraq', confederation: 'AFC', group: 'B' },
+  // Group C
+  { id: 'BRA', name: 'Brazil', confederation: 'CONMEBOL', group: 'C' },
+  { id: 'URU', name: 'Uruguay', confederation: 'CONMEBOL', group: 'C' },
+  { id: 'CMR', name: 'Cameroon', confederation: 'CAF', group: 'C' },
+  { id: 'NZL', name: 'New Zealand', confederation: 'OFC', group: 'C' },
+  // Group D
+  { id: 'ENG', name: 'England', confederation: 'UEFA', group: 'D' },
+  { id: 'USA', name: 'United States', confederation: 'CONCACAF', group: 'D' },
+  { id: 'TUN', name: 'Tunisia', confederation: 'CAF', group: 'D' },
+  { id: 'IRN', name: 'Iran', confederation: 'AFC', group: 'D' },
+  // Group E
+  { id: 'ESP', name: 'Spain', confederation: 'UEFA', group: 'E' },
+  { id: 'CRO', name: 'Croatia', confederation: 'UEFA', group: 'E' },
+  { id: 'JPN', name: 'Japan', confederation: 'AFC', group: 'E' },
+  { id: 'CRC', name: 'Costa Rica', confederation: 'CONCACAF', group: 'E' },
+  // Group F
+  { id: 'POR', name: 'Portugal', confederation: 'UEFA', group: 'F' },
+  { id: 'KOR', name: 'South Korea', confederation: 'AFC', group: 'F' },
+  { id: 'GHA', name: 'Ghana', confederation: 'CAF', group: 'F' },
+  { id: 'UZB', name: 'Uzbekistan', confederation: 'AFC', group: 'F' },
+  // Group G
+  { id: 'NED', name: 'Netherlands', confederation: 'UEFA', group: 'G' },
+  { id: 'ECU', name: 'Ecuador', confederation: 'CONMEBOL', group: 'G' },
+  { id: 'EGY', name: 'Egypt', confederation: 'CAF', group: 'G' },
+  { id: 'QAT', name: 'Qatar', confederation: 'AFC', group: 'G' },
+  // Group H
+  { id: 'GER', name: 'Germany', confederation: 'UEFA', group: 'H' },
+  { id: 'BEL', name: 'Belgium', confederation: 'UEFA', group: 'H' },
+  { id: 'SUI', name: 'Switzerland', confederation: 'UEFA', group: 'H' },
+  { id: 'NGA', name: 'Nigeria', confederation: 'CAF', group: 'H' },
 ];
+
+export const MOCK_TEAMS: Team[] = TEAM_META.map((t) => {
+  const ref = teamRefFor(t.id);
+  return {
+    id: t.id,
+    name: t.name,
+    flagCode: ref.flagCode,
+    confederation: t.confederation,
+    colors: { primary: ref.primary, secondary: ref.secondary },
+    group: t.group,
+  };
+});
 
 export const MOCK_TEAMS_BY_ID: Record<string, Team> = Object.fromEntries(
   MOCK_TEAMS.map((t) => [t.id, t]),

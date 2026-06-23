@@ -146,10 +146,11 @@ export function MatchView() {
 
       <p className="mt-6 text-xs text-offwhite-faint">
         Weights this run — Elo {Math.round(weights.elo * 100)}%, form{' '}
-        {Math.round(weights.form * 100)}%, Polymarket {Math.round(weights.polymarket * 100)}%, books{' '}
-        {Math.round(weights.books * 100)}%. Defaults are{' '}
+        {Math.round(weights.form * 100)}%, squad {Math.round(weights.squad * 100)}%, Polymarket{' '}
+        {Math.round(weights.polymarket * 100)}%, books {Math.round(weights.books * 100)}%. Defaults are{' '}
         {Math.round(DEFAULT_WEIGHTS.elo * 100)}/{Math.round(DEFAULT_WEIGHTS.form * 100)}/
-        {Math.round(DEFAULT_WEIGHTS.polymarket * 100)}/{Math.round(DEFAULT_WEIGHTS.books * 100)}.
+        {Math.round(DEFAULT_WEIGHTS.squad * 100)}/{Math.round(DEFAULT_WEIGHTS.polymarket * 100)}/
+        {Math.round(DEFAULT_WEIGHTS.books * 100)}.
       </p>
     </div>
   );

@@ -9,6 +9,7 @@ export function Bracket2D() {
 
   const byStage = new Map<MatchStage, Match[]>();
   for (const m of matches) {
+    if (m.stage === 'group') continue; // group stage lives on its own tab
     const arr = byStage.get(m.stage) ?? [];
     arr.push(m);
     byStage.set(m.stage, arr);

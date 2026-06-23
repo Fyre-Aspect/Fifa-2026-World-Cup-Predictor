@@ -3,7 +3,7 @@ import type { InputDistributions, Outcome } from './types';
 import { blendInputs } from './blend';
 import { brierScore, type OutcomeLabel } from './scoring';
 
-const KEYS: Array<keyof ModelWeights> = ['elo', 'form', 'polymarket', 'books'];
+const KEYS: Array<keyof ModelWeights> = ['elo', 'form', 'squad', 'polymarket', 'books'];
 const MIN_WEIGHT = 0.01;
 
 function oneHot(actual: OutcomeLabel): Outcome {

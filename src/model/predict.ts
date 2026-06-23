@@ -18,6 +18,7 @@ import {
 import { ELO_SEED } from './eloSeed';
 import { outcomeFromEloDiff } from './probability';
 import { buildFormTable, formSignal, type FormEntry } from './form';
+import { squadEloDiff, squadGoalFactor } from './squad';
 import { buildPrediction } from './blend';
 import { labelFromScore, type ScoredPrediction } from './scoring';
 import { gradientStep } from './learn';
@@ -88,6 +89,18 @@ function formInput(
   return outcomeFromEloDiff(diff);
 }
 
+/** Squad-quality input: the player-rating/league gap as an Elo-equivalent diff. */
+function squadInput(homeId: string, awayId: string): Outcome {
+  const diff = squadEloDiff(homeId, awayId) + PREDICT_HOME_ADVANTAGE * 0.4;
+  return outcomeFromEloDiff(diff);
+}
+
+/**
+ * Expected goals for each side. The Elo supremacy sets the baseline split, then
+ * squad quality (player ratings × the leagues they play in) nudges each side's
+ * goals up or down — so a team packed with top-five-league talent is modelled to
+ * convert its chances a little better. This is what turns into the scoreline.
+ */
 function expectedGoals(
   homeId: string,
   awayId: string,
@@ -99,10 +112,9 @@ function expectedGoals(
     ratingOf(ratings, awayId, config),
     PREDICT_HOME_ADVANTAGE,
   );
-  return {
-    home: Math.max(0.2, BASELINE_TOTAL_GOALS * (0.5 + SUPREMACY * (e - 0.5))),
-    away: Math.max(0.2, BASELINE_TOTAL_GOALS * (0.5 - SUPREMACY * (e - 0.5))),
-  };
+  const home = BASELINE_TOTAL_GOALS * (0.5 + SUPREMACY * (e - 0.5)) * squadGoalFactor(homeId, awayId);
+  const away = BASELINE_TOTAL_GOALS * (0.5 - SUPREMACY * (e - 0.5)) * squadGoalFactor(awayId, homeId);
+  return { home: Math.max(0.2, home), away: Math.max(0.2, away) };
 }
 
 /** Predict a single match; null if either side is undetermined (TBD). */
@@ -117,6 +129,7 @@ export function predictMatch(
   const inputs: InputDistributions = {
     elo: eloInput(match.homeTeamId, match.awayTeamId, ctx.ratings, config),
     form: formInput(match.homeTeamId, match.awayTeamId, ctx.form),
+    squad: squadInput(match.homeTeamId, match.awayTeamId),
     polymarket: ctx.polymarket?.[match.id] ?? null,
     books: ctx.books?.[match.id] ?? null,
   };
@@ -293,12 +306,13 @@ export function teamRatingTrajectory(
 /** Expose which inputs a match's prediction drew on (for the detail view). */
 export function inputBreakdown(match: Match, ctx: PredictContext): InputDistributions {
   if (!match.homeTeamId || !match.awayTeamId) {
-    return { elo: null, form: null, polymarket: null, books: null };
+    return { elo: null, form: null, squad: null, polymarket: null, books: null };
   }
   const config = ctx.config ?? DEFAULT_ELO_CONFIG;
   return {
     elo: eloInput(match.homeTeamId, match.awayTeamId, ctx.ratings, config),
     form: formInput(match.homeTeamId, match.awayTeamId, ctx.form),
+    squad: squadInput(match.homeTeamId, match.awayTeamId),
     polymarket: ctx.polymarket?.[match.id] ?? null,
     books: ctx.books?.[match.id] ?? null,
   };

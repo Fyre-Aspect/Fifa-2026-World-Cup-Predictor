@@ -29,8 +29,9 @@ export function BracketView() {
           The road to the final
         </h1>
         <p className="mt-3 text-offwhite-dim">
-          Group stage at the base, knockouts rising to the final at the top.
+          The knockout tree, Round of 16 rising to the final at the top.
           {lowPower ? ' Tap a match to open its prediction.' : ' Drag to orbit · click a card to flip it to the prediction.'}
+          {' '}For the group tables see the Groups tab; for round-by-round forecasts, Knockouts.
         </p>
       </motion.header>
 

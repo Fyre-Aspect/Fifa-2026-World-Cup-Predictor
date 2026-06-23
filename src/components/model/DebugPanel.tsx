@@ -6,6 +6,7 @@ import { formatWeight } from '@/lib/format';
 const ROWS: Array<{ key: keyof ModelWeights; label: string }> = [
   { key: 'elo', label: 'Team strength (Elo)' },
   { key: 'form', label: 'Recent form' },
+  { key: 'squad', label: 'Squad quality (players)' },
   { key: 'polymarket', label: 'Polymarket' },
   { key: 'books', label: 'Bookmakers' },
 ];
