@@ -46,7 +46,7 @@ export function DataSourceBadge() {
           ? `Live data from ${provider}. Polls automatically while a match is in progress.`
           : isLoading
             ? 'Loading the latest fixtures…'
-            : 'Bundled snapshot — not a live feed. Add an API-Football key to go live, then refresh.'
+            : 'Bundled snapshot — not a live feed. Add a football API key to .env.local to go live, then refresh.'
       }
     >
       <span className="relative flex h-2 w-2 shrink-0">

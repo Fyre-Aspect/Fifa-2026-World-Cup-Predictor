@@ -106,11 +106,13 @@ scoreline via independent Poisson marginals.
 
 ## 4. Known problems (the "what's wrong" — as of 2026-06-27)
 
-1. **Not real-time.** The bundled dataset (`realResults.ts`) is a **manual
-   snapshot** captured ~22–23 June 2026. It does not live-update. The live path
-   exists but was wired to **football-data.org**, whose *free* tier does **not**
-   include the World Cup competition — so a free key there produces no live WC
-   data and the app silently stays on the snapshot.
+1. ~~**Not real-time.**~~ **FIXED (2026-06-27).** The real cause was *env-file
+   location*, not the provider: the keys were placed in `.env.example` (a
+   template Vite never loads) instead of `.env.local`. With keys in `.env.local`
+   the app goes live. **Correction:** football-data.org's *free* tier **does**
+   cover the World Cup (competition `WC`, season 2026 — 104 fixtures, live
+   scores). It is now the working primary live source; API-Football is optional.
+   The bundled `realResults.ts` snapshot remains the graceful no-key fallback.
 2. **Globe is "not even Earth."** `Globe.tsx` loads the Earth texture from a
    remote CDN (`unpkg.com/three-globe/...`). When that request is blocked /
    offline / rate-limited, `useImageTexture` returns null and the sphere falls
