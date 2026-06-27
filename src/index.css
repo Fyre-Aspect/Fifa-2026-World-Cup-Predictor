@@ -17,6 +17,15 @@
     @apply bg-pitch-950 text-offwhite font-sans antialiased;
     margin: 0;
     overflow-x: hidden;
+    /* Stadium-twilight base: deep navy lit by faint FIFA-26 magenta + cyan glows.
+       Subtle enough to keep text legible, enough to kill the old gloom. */
+    background-color: #070b1c;
+    background-image:
+      radial-gradient(48rem 48rem at 12% -8%, rgba(255, 46, 136, 0.16), transparent 60%),
+      radial-gradient(46rem 46rem at 92% 4%, rgba(25, 227, 214, 0.13), transparent 60%),
+      radial-gradient(60rem 40rem at 50% 118%, rgba(240, 180, 41, 0.1), transparent 60%),
+      linear-gradient(180deg, #080d20 0%, #070b1c 55%, #060914 100%);
+    background-attachment: fixed;
   }
 
   /* Tabular numerals everywhere by default — precision matters in a stats app. */
@@ -25,40 +34,83 @@
   }
 
   ::selection {
-    background: rgba(212, 164, 55, 0.3);
-    color: #f4f1e8;
+    background: rgba(255, 46, 136, 0.3);
+    color: #f3f6fc;
   }
 
-  /* Subtle pitch-toned scrollbar */
+  /* Slim, glassy scrollbar */
   ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
   }
   ::-webkit-scrollbar-track {
-    background: #04150f;
+    background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #1a4733;
+    background: rgba(134, 145, 173, 0.28);
     border-radius: 6px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #2a6149;
+    background: rgba(240, 180, 41, 0.45);
+    background-clip: padding-box;
   }
 }
 
 @layer components {
-  /* Frosted card surface used across views */
+  /* ---- Liquid glass ------------------------------------------------- */
+  /* Frosted, translucent card surface used across views. Tinted white over the
+     navy base, blurred, with a bright top edge for the "wet glass" look. */
   .surface {
-    @apply rounded-xl border border-pitch-600/40 bg-pitch-800/60 backdrop-blur-sm;
+    border-radius: 0.85rem;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background-image: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.07) 0%,
+      rgba(255, 255, 255, 0.025) 45%,
+      rgba(8, 13, 32, 0.18) 100%
+    );
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    backdrop-filter: blur(16px) saturate(150%);
+    box-shadow:
+      0 8px 32px -16px rgba(0, 0, 0, 0.7),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
   }
 
   .surface-raised {
-    @apply rounded-xl border border-pitch-600/50 bg-pitch-700/70 shadow-card backdrop-blur-md;
+    border-radius: 0.95rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background-image: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.04) 50%,
+      rgba(8, 13, 32, 0.22) 100%
+    );
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    backdrop-filter: blur(22px) saturate(160%);
+    box-shadow:
+      0 18px 50px -22px rgba(0, 0, 0, 0.8),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+  }
+
+  /* Compact glass pill — header chips, badges. */
+  .glass-chip {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-image: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.09),
+      rgba(255, 255, 255, 0.03)
+    );
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    backdrop-filter: blur(12px) saturate(150%);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
   }
 
   /* Skeleton shimmer — used for loading states. Never spinners. */
   .skeleton {
-    @apply relative overflow-hidden rounded-md bg-pitch-700/50;
+    @apply relative overflow-hidden rounded-md;
+    background: rgba(255, 255, 255, 0.05);
   }
   .skeleton::after {
     content: '';
@@ -76,11 +128,28 @@
     @apply bg-gradient-to-b from-gold-200 to-gold-500 bg-clip-text text-transparent;
   }
 
-  /* Hover affordance: subtle scale + gold glow */
+  /* FIFA 26 spectrum text — for hero headlines / accent words. */
+  .text-gradient-fifa {
+    background-image: linear-gradient(100deg, #ff5fa2 0%, #f0b429 48%, #2fe6da 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    @apply animate-gradient-pan;
+  }
+
+  /* Hover affordance: subtle lift + scale. */
   .interactive {
     @apply transition-transform duration-200 ease-out will-change-transform;
   }
   .interactive:hover {
     @apply scale-[1.02];
+  }
+
+  /* Thin FIFA-spectrum rule, e.g. under section headers. */
+  .rule-fifa {
+    height: 2px;
+    background-image: linear-gradient(90deg, #ff2e88, #f0b429 50%, #19e3d6);
+    border-radius: 9999px;
   }
 }

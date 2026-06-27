@@ -8,8 +8,14 @@ import { useImageTexture } from './useImageTexture';
 import { CityPin } from './CityPin';
 
 const GLOBE_RADIUS = 2;
-/** NASA Blue Marble (public domain), served from the three-globe example assets. */
-const EARTH_TEXTURE_URL = 'https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg';
+/**
+ * NASA Blue Marble + relief + ocean mask, bundled locally in /public/textures so
+ * the Earth always renders (the old remote CDN texture frequently failed, which
+ * left a flat coloured ball that didn't read as Earth at all).
+ */
+const EARTH_MAP_URL = '/textures/earth.jpg';
+const EARTH_BUMP_URL = '/textures/earth-topology.png';
+const EARTH_WATER_URL = '/textures/earth-water.png';
 
 /** North America-ish center used as the resting orientation. */
 const HOME = latLonToVector3(38, -97, 1);
@@ -35,7 +41,10 @@ interface GlobeProps {
 
 export function Globe({ cities, selectedCityId, onSelectCity }: GlobeProps) {
   const groupRef = useRef<THREE.Group>(null);
-  const earthTexture = useImageTexture(EARTH_TEXTURE_URL);
+  const earthMap = useImageTexture(EARTH_MAP_URL);
+  // Bump + ocean mask are data maps — load them in linear space.
+  const earthBump = useImageTexture(EARTH_BUMP_URL, THREE.NoColorSpace);
+  const earthWater = useImageTexture(EARTH_WATER_URL, THREE.NoColorSpace);
 
   const pinData = useMemo(
     () =>
@@ -68,23 +77,44 @@ export function Globe({ cities, selectedCityId, onSelectCity }: GlobeProps) {
     <group ref={groupRef} rotation={[0, HOME_Y, 0.35]}>
       <Stars radius={60} depth={40} count={1800} factor={3} saturation={0} fade speed={0.4} />
 
-      {/* Earth */}
+      {/* Earth — Blue Marble colour, topographic relief, glinting oceans. */}
       <mesh>
-        <sphereGeometry args={[GLOBE_RADIUS, 64, 64]} />
-        {earthTexture ? (
-          <meshStandardMaterial map={earthTexture} roughness={0.85} metalness={0.05} />
+        <sphereGeometry args={[GLOBE_RADIUS, 96, 96]} />
+        {earthMap ? (
+          <meshStandardMaterial
+            map={earthMap}
+            bumpMap={earthBump ?? undefined}
+            bumpScale={0.05}
+            // Ocean mask is white over water → those areas pick up metalness and
+            // reflect the rig, giving the seas a subtle specular glint vs matte land.
+            metalnessMap={earthWater ?? undefined}
+            metalness={earthWater ? 0.55 : 0.1}
+            roughness={0.78}
+          />
         ) : (
-          <meshStandardMaterial color="#15543a" roughness={0.9} metalness={0.05} />
+          // Fallback is now ocean-blue (not green) so it still reads as Earth.
+          <meshStandardMaterial color="#1b3a6b" roughness={0.85} metalness={0.1} />
         )}
       </mesh>
 
-      {/* Thin atmosphere shell */}
-      <mesh scale={1.04}>
+      {/* Inner atmosphere — soft cyan rim on the back face. */}
+      <mesh scale={1.035}>
+        <sphereGeometry args={[GLOBE_RADIUS, 64, 64]} />
+        <meshBasicMaterial
+          color="#3aa0ff"
+          transparent
+          opacity={0.14}
+          side={THREE.BackSide}
+          depthWrite={false}
+        />
+      </mesh>
+      {/* Outer atmosphere — fainter, wider halo. */}
+      <mesh scale={1.12}>
         <sphereGeometry args={[GLOBE_RADIUS, 48, 48]} />
         <meshBasicMaterial
-          color="#4f9bd6"
+          color="#6fc3ff"
           transparent
-          opacity={0.08}
+          opacity={0.06}
           side={THREE.BackSide}
           depthWrite={false}
         />

@@ -1,9 +1,13 @@
 import type { Config } from 'tailwindcss';
 
 /**
- * GroupStage theme — FIFA broadcast graphics meet a high-end sports
- * analytics dashboard. Deep pitch green base, warm gold accents, clean
- * off-white text. No purple, no neon, no AI-aesthetic gradients.
+ * GroupStage theme — FIFA World Cup 26.
+ *
+ * The 2026 identity is bright and multi-coloured, so we move off the old gloomy
+ * deep-green base onto a "stadium twilight" deep-blue, lit by the tournament's
+ * vibrant accents (magenta + cyan) and trophy gold. The token *names* are kept
+ * (`pitch`, `gold`, `offwhite`) so the entire existing className surface
+ * re-skins instantly — only their values change here.
  */
 const config: Config = {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
@@ -11,36 +15,55 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Base scale — deep blue "stadium night" (was pitch green).
         pitch: {
-          50: '#e8f2ec',
-          100: '#c5ded1',
-          200: '#9cc5b1',
-          300: '#6fa98e',
-          400: '#46876a',
-          500: '#2a6149',
-          600: '#1a4733',
-          700: '#103826',
-          800: '#0a2e1f', // base
-          900: '#072218',
-          950: '#04150f',
+          50: '#eef3fb',
+          100: '#d9e2f4',
+          200: '#b1c1e8',
+          300: '#8198d6',
+          400: '#5670b5',
+          500: '#364d8a',
+          600: '#26396f', // borders
+          700: '#1a2c5c',
+          800: '#122046', // base surface
+          900: '#0b1430',
+          950: '#070b1c', // page base
         },
+        // Trophy gold — primary accent / CTAs.
         gold: {
-          DEFAULT: '#d4a437',
-          50: '#fbf6e7',
-          100: '#f5e7bf',
-          200: '#ecd28a',
-          300: '#e2bd58',
-          400: '#d4a437', // accent
-          500: '#b9882a',
-          600: '#946a21',
-          700: '#6f4f19',
-          800: '#4b3511',
-          900: '#2a1d09',
+          DEFAULT: '#f0b429',
+          50: '#fdf6e3',
+          100: '#f9e7b6',
+          200: '#f2d281',
+          300: '#ecc153',
+          400: '#f0b429', // accent
+          500: '#cf9415',
+          600: '#a5740f',
+          700: '#79540c',
+          800: '#4f3708',
+          900: '#2c1f05',
+        },
+        // FIFA 26 vibrant accents — used for energy, gradients, live states.
+        magenta: {
+          DEFAULT: '#ff2e88',
+          200: '#ffb3d2',
+          300: '#ff6aa9',
+          400: '#ff2e88',
+          500: '#e01f72',
+          600: '#b31659',
+        },
+        cyan: {
+          DEFAULT: '#19e3d6',
+          200: '#a8f4ed',
+          300: '#5ceadb',
+          400: '#19e3d6',
+          500: '#0bb9ae',
+          600: '#0a8f88',
         },
         offwhite: {
-          DEFAULT: '#f4f1e8',
-          dim: '#cfcabb',
-          faint: '#8f8c80',
+          DEFAULT: '#f3f6fc',
+          dim: '#c3cbe0',
+          faint: '#8791ad',
         },
       },
       fontFamily: {
@@ -51,9 +74,12 @@ const config: Config = {
         tabular: 'tabular-nums',
       },
       boxShadow: {
-        glow: '0 0 24px -4px rgba(212, 164, 55, 0.45)',
-        'glow-sm': '0 0 12px -2px rgba(212, 164, 55, 0.35)',
-        card: '0 8px 32px -8px rgba(0, 0, 0, 0.6)',
+        glow: '0 0 28px -4px rgba(240, 180, 41, 0.5)',
+        'glow-sm': '0 0 14px -2px rgba(240, 180, 41, 0.4)',
+        'glow-magenta': '0 0 28px -4px rgba(255, 46, 136, 0.5)',
+        card: '0 18px 50px -22px rgba(0, 0, 0, 0.75)',
+        // Liquid-glass: soft drop + an inner top highlight for the "wet" edge.
+        glass: '0 8px 32px -12px rgba(0, 0, 0, 0.7), inset 0 1px 0 0 rgba(255, 255, 255, 0.08)',
       },
       keyframes: {
         shimmer: {
@@ -64,14 +90,26 @@ const config: Config = {
           '0%, 100%': { opacity: '0.6' },
           '50%': { opacity: '1' },
         },
+        'gradient-pan': {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-6px)' },
+        },
       },
       animation: {
         shimmer: 'shimmer 1.6s ease-in-out infinite',
         'pulse-glow': 'pulse-glow 2.4s ease-in-out infinite',
+        'gradient-pan': 'gradient-pan 8s ease-in-out infinite',
+        float: 'float 6s ease-in-out infinite',
       },
       backgroundImage: {
         shimmer:
-          'linear-gradient(90deg, transparent 0%, rgba(244,241,232,0.06) 50%, transparent 100%)',
+          'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%)',
+        // FIFA 26 spectrum used for hero text + accent rules.
+        'fifa-spectrum': 'linear-gradient(100deg, #ff2e88 0%, #f0b429 45%, #19e3d6 100%)',
       },
     },
   },

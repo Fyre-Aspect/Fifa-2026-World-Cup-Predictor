@@ -31,6 +31,8 @@ export function GroupStageView() {
   const matches = useStore((s) => s.matches);
   const teams = useStore((s) => s.teams);
   const predictions = useStore((s) => s.predictions);
+  const dataSource = useStore((s) => s.dataSource);
+  const dataProvider = useStore((s) => s.dataProvider);
 
   const groups = useMemo(() => {
     const groupMatches = matches.filter((m) => m.stage === 'group' && m.group);
@@ -58,16 +60,18 @@ export function GroupStageView() {
       >
         <p className="text-xs font-600 uppercase tracking-widest text-gold-300">Group stage</p>
         <h1 className="mt-2 font-display text-4xl font-700 tracking-tight text-offwhite">
-          Eight groups, sixteen tickets out
+          Twelve groups, thirty-two tickets out
         </h1>
+        <div className="mt-3 h-0.5 w-24 rule-fifa" />
         <p className="mt-3 text-offwhite-dim">
           Live tables and every fixture. Played games show the actual result; upcoming
           games show the model&rsquo;s predicted scoreline. Top two of each group, plus
           the eight best third-placed teams, reach the Round of 32.
         </p>
         <p className="mt-2 text-xs text-offwhite-faint">
-          Real results captured as a snapshot on {snapshotDate} — not a live feed.
-          Fixtures without a captured result are shown as upcoming.
+          {dataSource === 'live'
+            ? `Live results via ${dataProvider ?? 'the live feed'}, refreshing while matches are in progress.`
+            : `Real results captured as a snapshot on ${snapshotDate} — not a live feed. Fixtures without a captured result are shown as upcoming.`}
         </p>
       </motion.header>
 

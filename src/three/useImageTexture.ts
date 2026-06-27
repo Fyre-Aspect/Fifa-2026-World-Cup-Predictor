@@ -3,11 +3,18 @@ import * as THREE from 'three';
 
 /**
  * Loads an image into a THREE.Texture without suspending, returning null while
- * loading and null on failure. This keeps the 3D scene robust: if a remote
- * texture (Earth map, flag) is blocked or 404s, the caller falls back to a
- * solid color instead of crashing a Suspense boundary.
+ * loading and null on failure. This keeps the 3D scene robust: if a texture is
+ * blocked or 404s, the caller falls back to a solid color instead of crashing a
+ * Suspense boundary.
+ *
+ * `colorSpace` defaults to sRGB for colour maps; pass `THREE.NoColorSpace` (or
+ * LinearSRGBColorSpace) for data maps like bump / roughness / metalness so their
+ * raw values aren't gamma-shifted.
  */
-export function useImageTexture(url: string | null): THREE.Texture | null {
+export function useImageTexture(
+  url: string | null,
+  colorSpace: THREE.ColorSpace = THREE.SRGBColorSpace,
+): THREE.Texture | null {
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
 
   useEffect(() => {
@@ -25,7 +32,7 @@ export function useImageTexture(url: string | null): THREE.Texture | null {
           tex.dispose();
           return;
         }
-        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.colorSpace = colorSpace;
         tex.anisotropy = 4;
         setTexture(tex);
       },
@@ -38,7 +45,7 @@ export function useImageTexture(url: string | null): THREE.Texture | null {
     return () => {
       active = false;
     };
-  }, [url]);
+  }, [url, colorSpace]);
 
   return texture;
 }

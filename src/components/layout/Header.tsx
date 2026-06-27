@@ -4,6 +4,7 @@ import { cn } from '@/lib/cn';
 import { useStore } from '@/store/useStore';
 import { Logo } from './Logo';
 import { NotificationBell } from './NotificationBell';
+import { DataSourceBadge } from './DataSourceBadge';
 
 const NAV = [
   { to: '/', label: 'Globe', end: true },
@@ -15,7 +16,7 @@ const NAV = [
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-30 border-b border-pitch-600/40 bg-pitch-950/80 backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-white/10 bg-pitch-950/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-8">
           <Logo />
@@ -40,7 +41,7 @@ export function Header() {
                     {isActive && (
                       <motion.span
                         layoutId="nav-underline"
-                        className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-gold-400 shadow-glow-sm"
+                        className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-fifa-spectrum shadow-glow-sm"
                         transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                       />
                     )}
@@ -51,15 +52,16 @@ export function Header() {
           </nav>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <DataSourceBadge />
           <HonestyBadge />
           <NotificationBell />
           <DebugToggle />
         </div>
       </div>
 
-      {/* Mobile nav */}
-      <nav className="flex items-center gap-1 overflow-x-auto border-t border-pitch-700/40 px-4 py-2 sm:hidden">
+      {/* Mobile nav — scrollable glass tabs with a clear active state. */}
+      <nav className="flex items-center gap-1.5 overflow-x-auto border-t border-white/10 px-4 py-2.5 sm:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {NAV.map((item) => (
           <NavLink
             key={item.to}
@@ -67,10 +69,10 @@ export function Header() {
             end={item.end}
             className={({ isActive }) =>
               cn(
-                'shrink-0 whitespace-nowrap rounded-md px-3 py-1.5 text-center text-sm font-500 transition-colors',
+                'shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-center text-sm font-600 transition-colors',
                 isActive
-                  ? 'bg-pitch-700/60 text-offwhite'
-                  : 'text-offwhite-dim',
+                  ? 'glass-chip text-gold-300'
+                  : 'text-offwhite-dim active:text-offwhite',
               )
             }
           >

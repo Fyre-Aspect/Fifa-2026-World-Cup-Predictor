@@ -56,6 +56,7 @@ export function KnockoutsView() {
         <h1 className="mt-2 font-display text-4xl font-700 tracking-tight text-offwhite">
           Projected road to the title
         </h1>
+        <div className="mt-3 h-0.5 w-24 rule-fifa" />
         <p className="mt-3 text-offwhite-dim">
           Seeded from the projected group finishers, then simulated round by round.
           These are model projections, not the drawn bracket — they shift as group

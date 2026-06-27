@@ -55,8 +55,8 @@ export function Stage({
       }}
       camera={{ position: cameraPosition, fov, near: 0.1, far: 100 }}
     >
-      <color attach="background" args={['#04150f']} />
-      <fog attach="fog" args={['#04150f', 14, 36]} />
+      <color attach="background" args={['#070b1c']} />
+      <fog attach="fog" args={['#070b1c', 14, 36]} />
 
       {/* Lighting: warm key + cool fill + soft ambient. */}
       <ambientLight intensity={0.45} color="#cfe6d8" />
