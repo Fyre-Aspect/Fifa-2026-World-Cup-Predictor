@@ -69,7 +69,7 @@ function mapGroup(group: string | null | undefined): string | null {
   return m ? m[1].toUpperCase() : null;
 }
 
-function teamIdOf(ref: { tla?: string | null; id: number }): string | null {
+function teamIdOf(ref: { tla?: string | null; id: number | null }): string | null {
   if (ref.tla) return ref.tla.toUpperCase();
   // Pre-draw placeholders ("Winner Group A") have no tla — treat as TBD.
   return null;

@@ -13,21 +13,63 @@ interface LiveResult extends TournamentData {
   provider: string;
 }
 
+interface AvailableProviders {
+  apiFootball: boolean;
+  footballData: boolean;
+}
+
 /**
- * Tries each live provider in priority order, returning the first that yields
- * fixtures. API-Football is primary (its free tier covers the World Cup);
- * football-data.org is a secondary fallback. Throws if none work, so the caller
- * drops to the bundled snapshot.
+ * Which live providers actually have a key configured, per the proxy's /health.
+ * We check this first so we never fire a request at a provider with no key —
+ * that request would 503 and spam the browser console even though the fallback
+ * works. Cached after the first successful check (keys don't change at runtime).
+ */
+let cachedProviders: AvailableProviders | null = null;
+
+async function getAvailableProviders(): Promise<AvailableProviders> {
+  if (cachedProviders) return cachedProviders;
+  try {
+    const res = await fetch('/api/health', { headers: { accept: 'application/json' } });
+    if (res.ok) {
+      const json = (await res.json()) as { services?: Partial<AvailableProviders> };
+      cachedProviders = {
+        apiFootball: Boolean(json.services?.apiFootball),
+        footballData: Boolean(json.services?.footballData),
+      };
+      return cachedProviders;
+    }
+  } catch {
+    // Health unreachable — don't cache; fall through to a best-effort attempt.
+  }
+  // If we can't determine, still try football-data (the common single-key setup).
+  return { apiFootball: false, footballData: true };
+}
+
+/**
+ * Tries each configured live provider in priority order, returning the first
+ * that yields fixtures. API-Football is preferred when keyed (richer live data);
+ * football-data.org is the other supported source — its free tier covers the
+ * World Cup. Providers with no key are skipped entirely (no wasted 503). Throws
+ * if none are configured or all fail, so the caller drops to the snapshot.
  */
 async function fetchLiveTournament(signal?: AbortSignal): Promise<LiveResult> {
-  try {
-    const data = await fetchTournamentDataApiFootball(signal);
-    return { ...data, provider: 'API-Football' };
-  } catch {
-    // Fall through to the secondary provider.
+  const providers = await getAvailableProviders();
+
+  if (providers.apiFootball) {
+    try {
+      const data = await fetchTournamentDataApiFootball(signal);
+      return { ...data, provider: 'API-Football' };
+    } catch {
+      // Fall through to the next configured provider.
+    }
   }
-  const data = await fetchTournamentData(signal);
-  return { ...data, provider: 'football-data.org' };
+
+  if (providers.footballData) {
+    const data = await fetchTournamentData(signal);
+    return { ...data, provider: 'football-data.org' };
+  }
+
+  throw new Error('no_live_provider');
 }
 
 /**

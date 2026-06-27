@@ -8,7 +8,9 @@ import { z } from 'zod';
  */
 
 const fdTeamRef = z.object({
-  id: z.number(),
+  // null for pre-draw knockout placeholders ("Winner Group A"); we key teams by
+  // TLA, not this numeric id, so a null here is fine and must not fail the parse.
+  id: z.number().nullable(),
   name: z.string().nullable().optional(),
   tla: z.string().nullable().optional(),
   crest: z.string().nullable().optional(),
