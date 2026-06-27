@@ -2,7 +2,7 @@ import type { Match, MatchPrediction, MatchStage, ModelWeights } from '@/types/d
 import type { EloRatings } from '@/model/elo';
 import { buildFormTable } from '@/model/form';
 import { predictMatch } from '@/model/predict';
-import { mostLikelyScore, type Scoreline } from '@/model/scoreline';
+import { mostLikelyDecisiveScore, type Scoreline } from '@/model/scoreline';
 
 /**
  * Forward projection of the knockout bracket. The Round of 32 is seeded from the
@@ -23,7 +23,7 @@ export interface ProjectedTie {
   prediction: MatchPrediction | null;
   scoreline: Scoreline | null;
   winnerId: string | null;
-  /** True when the modal scoreline is level — decided in extra time / penalties. */
+  /** True when the tie is projected level after 90' — decided in extra time / penalties. */
   aet: boolean;
 }
 
@@ -92,9 +92,14 @@ export function projectKnockouts(
     let winnerId: string | null = null;
     let aet = false;
     if (prediction) {
-      scoreline = mostLikelyScore(prediction.xgHome, prediction.xgAway);
-      winnerId = prediction.homeWin >= prediction.awayWin ? homeId : awayId;
-      aet = scoreline.home === scoreline.away;
+      // A knockout tie always has a winner, so show the most likely *decisive*
+      // scoreline for the side that advances — never a draw. The tie is only
+      // flagged AET when regulation is projected level (draw is the single most
+      // likely outcome), which the winner then edges in extra time / penalties.
+      const homeWins = prediction.homeWin >= prediction.awayWin;
+      winnerId = homeWins ? homeId : awayId;
+      scoreline = mostLikelyDecisiveScore(prediction.xgHome, prediction.xgAway, homeWins);
+      aet = prediction.draw >= prediction.homeWin && prediction.draw >= prediction.awayWin;
     }
 
     return { id, stage, kickoff, cityId, homeId, awayId, prediction, scoreline, winnerId, aet };

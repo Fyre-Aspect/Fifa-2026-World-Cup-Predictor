@@ -49,6 +49,29 @@ export function mostLikelyScore(xgHome: number, xgAway: number): Scoreline {
   return matrix.reduce((best, s) => (s.prob > best.prob ? s : best));
 }
 
+/**
+ * The most probable *decisive* scoreline in which a chosen side wins. Used for
+ * knockout ties, where a draw can't be the final result — someone has to
+ * advance. Conditioning on the winner this way yields varied, sensible scores
+ * (1–0, 2–1, 2–0, …) instead of collapsing every even tie onto 1–1. The
+ * returned scoreline is always oriented home–away; `homeWins` picks which side
+ * comes out on top.
+ */
+export function mostLikelyDecisiveScore(
+  xgHome: number,
+  xgAway: number,
+  homeWins: boolean,
+): Scoreline {
+  const decisive = scoreMatrix(xgHome, xgAway).filter((s) =>
+    homeWins ? s.home > s.away : s.away > s.home,
+  );
+  // Fallback to a minimal 1–0 win if the grid somehow had no decisive cell.
+  if (decisive.length === 0) {
+    return homeWins ? { home: 1, away: 0, prob: 0 } : { home: 0, away: 1, prob: 0 };
+  }
+  return decisive.reduce((best, s) => (s.prob > best.prob ? s : best));
+}
+
 /** The `n` most probable exact scorelines, most likely first. */
 export function topScorelines(xgHome: number, xgAway: number, n = 4): Scoreline[] {
   return scoreMatrix(xgHome, xgAway)
