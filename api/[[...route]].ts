@@ -146,4 +146,9 @@ app.get('/odds/:sportKey', async (c) => {
 
 app.notFound((c) => c.json({ error: 'not_found' }, 404));
 
+// Exported so the Vite dev server can mount the same Hono app in-process
+// (see the hono-api-dev plugin in vite.config.ts), instead of proxying to a
+// separate `vercel dev` process that may not be running.
+export { app };
+
 export default handle(app);
