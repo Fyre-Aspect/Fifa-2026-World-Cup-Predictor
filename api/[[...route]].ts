@@ -14,6 +14,7 @@ import { handle } from 'hono/vercel';
 export const config = { runtime: 'nodejs' };
 
 const FOOTBALL_DATA_BASE = 'https://api.football-data.org/v4';
+const API_FOOTBALL_BASE = 'https://v3.football.api-sports.io';
 const ODDS_API_BASE = 'https://api.the-odds-api.com/v4';
 
 const app = new Hono().basePath('/api');
@@ -22,11 +23,57 @@ app.get('/health', (c) =>
   c.json({
     ok: true,
     services: {
+      apiFootball: Boolean(process.env.API_FOOTBALL_KEY),
       footballData: Boolean(process.env.FOOTBALL_DATA_API_KEY),
       oddsApi: Boolean(process.env.ODDS_API_KEY),
     },
   }),
 );
+
+/**
+ * API-Football (api-sports.io) proxy: /api/apifootball/<resource>?league=1&season=2026
+ * resource ∈ { fixtures, teams, standings }. Its free tier (100 req/day) covers
+ * the World Cup, so this is GroupStage's primary live source. The secret key is
+ * attached here and never reaches the browser.
+ */
+app.get('/apifootball/:resource', async (c) => {
+  const key = process.env.API_FOOTBALL_KEY;
+  if (!key) {
+    return c.json({ error: 'missing_api_football_key' }, 503);
+  }
+
+  const resource = c.req.param('resource');
+  const allowed = new Set(['fixtures', 'teams', 'standings']);
+  if (!allowed.has(resource)) {
+    return c.json({ error: 'unknown_resource' }, 404);
+  }
+
+  // World Cup is league 1; the 2026 edition is season 2026. Both overridable.
+  const league = c.req.query('league') ?? '1';
+  const season = c.req.query('season') ?? '2026';
+  const params = new URLSearchParams({ league, season });
+  if (resource === 'fixtures' && c.req.query('live')) {
+    params.set('live', c.req.query('live') as string);
+  }
+  const url = `${API_FOOTBALL_BASE}/${resource}?${params.toString()}`;
+
+  try {
+    const upstream = await fetch(url, {
+      headers: { 'x-apisports-key': key },
+    });
+    const body = await upstream.text();
+    return new Response(body, {
+      status: upstream.status,
+      headers: {
+        'content-type': upstream.headers.get('content-type') ?? 'application/json',
+        // Short edge cache; the client manages its own SWR cache too.
+        'cache-control': 'public, max-age=0, s-maxage=20',
+      },
+    });
+  } catch {
+    return c.json({ error: 'upstream_unreachable' }, 502);
+  }
+});
 
 /**
  * football-data.org proxy: /api/football/<resource>?competition=WC

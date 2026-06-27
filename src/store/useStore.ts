@@ -60,6 +60,10 @@ export interface AppState {
   lowPower: boolean;
   /** Whether the tournament data is live from the API, bundled sample, or still loading. */
   dataSource: 'loading' | 'live' | 'mock';
+  /** Human-readable provider for the data badge, e.g. "API-Football" or "Snapshot". */
+  dataProvider: string | null;
+  /** Epoch ms the tournament data was last (re)loaded; null until first load. */
+  dataUpdatedAt: number | null;
   /** Whether the user has opted into browser match notifications. */
   notificationsEnabled: boolean;
 
@@ -87,6 +91,11 @@ export interface AppState {
   toggleDebug: () => void;
   setLowPower: (low: boolean) => void;
   setDataSource: (source: 'loading' | 'live' | 'mock') => void;
+  setDataMeta: (meta: {
+    source: 'loading' | 'live' | 'mock';
+    provider: string | null;
+    updatedAt: number | null;
+  }) => void;
   setNotificationsEnabled: (enabled: boolean) => void;
 }
 
@@ -116,6 +125,8 @@ export const useStore = create<AppState>((set) => ({
   debugOpen: false,
   lowPower: false,
   dataSource: 'loading',
+  dataProvider: null,
+  dataUpdatedAt: null,
   notificationsEnabled: false,
 
   setTeams: (teams) => set({ teams }),
@@ -166,5 +177,7 @@ export const useStore = create<AppState>((set) => ({
   toggleDebug: () => set((s) => ({ debugOpen: !s.debugOpen })),
   setLowPower: (low) => set({ lowPower: low }),
   setDataSource: (source) => set({ dataSource: source }),
+  setDataMeta: ({ source, provider, updatedAt }) =>
+    set({ dataSource: source, dataProvider: provider, dataUpdatedAt: updatedAt }),
   setNotificationsEnabled: (notificationsEnabled) => set({ notificationsEnabled }),
 }));
