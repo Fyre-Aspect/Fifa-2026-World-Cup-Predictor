@@ -10,7 +10,6 @@ import { mostLikelyScore } from '@/model/scoreline';
 import { formatKickoff } from '@/lib/tournament';
 import { StatusDot } from '@/components/match/MatchStatusBadge';
 import { LiveNowBanner } from '@/components/match/LiveNowBanner';
-import { ModelScoreboard } from '@/components/model/ModelScoreboard';
 import { RESULTS_AS_OF } from '@/data/realResults';
 import type { Match, MatchPrediction, Team } from '@/types/domain';
 
@@ -49,7 +48,7 @@ export function GroupStageView() {
   }, [matches, teams]);
 
   return (
-    <div className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
       <motion.header
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -74,8 +73,6 @@ export function GroupStageView() {
 
       <LiveNowBanner />
 
-      <ModelScoreboard />
-
       <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-offwhite-faint">
         <span className="font-600 uppercase tracking-wide">Key</span>
         <Legend status="live" label="Being played now" />
@@ -83,7 +80,7 @@ export function GroupStageView() {
         <Legend status="scheduled" label="Upcoming · predicted score" />
       </div>
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="space-y-5">
         {groups.map((g, i) => (
           <GroupCard
             key={g.letter}

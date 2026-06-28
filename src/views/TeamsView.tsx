@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { Flag } from '@/components/ui/Flag';
-import { PitchField } from '@/components/teams/PitchField';
 import { ELO_SEED } from '@/model/eloSeed';
 import { cn } from '@/lib/cn';
 import type { Team } from '@/types/domain';
@@ -44,10 +43,7 @@ export function TeamsView() {
   const rest = ranked.slice(1);
 
   return (
-    <div className="relative">
-      <PitchField />
-
-      <div className="relative z-10 mx-auto max-w-[1100px] px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
         <motion.header
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -77,22 +73,18 @@ export function TeamsView() {
           />
         )}
 
-        <motion.div
-          layout
-          className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          {rest.map((r, i) => (
-            <TeamCard
-              key={r.team.id}
-              rank={i + 2}
-              team={r.team}
-              rating={r.rating}
-              delta={r.delta}
-              strength={strengthOf(r.rating)}
-            />
-          ))}
-        </motion.div>
-      </div>
+      <motion.div layout className="mt-4 space-y-2.5">
+        {rest.map((r, i) => (
+          <TeamCard
+            key={r.team.id}
+            rank={i + 2}
+            team={r.team}
+            rating={r.rating}
+            delta={r.delta}
+            strength={strengthOf(r.rating)}
+          />
+        ))}
+      </motion.div>
     </div>
   );
 }

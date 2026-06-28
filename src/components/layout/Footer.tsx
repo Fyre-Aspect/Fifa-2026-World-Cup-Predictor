@@ -18,7 +18,7 @@ export function Footer() {
   const source = SOURCE_LABEL[dataSource];
 
   return (
-    <footer className="border-t border-pitch-700/40 bg-pitch-950/60 px-4 py-5 text-xs text-offwhite-faint sm:px-6">
+    <footer className="relative z-10 border-t border-pitch-700/40 bg-pitch-950/80 px-4 py-5 text-xs text-offwhite-faint backdrop-blur-md sm:px-6">
       <div className="mx-auto flex max-w-[1600px] flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
         <p className="max-w-xl leading-relaxed">
           A predictions site for fun, not a betting service. Every number is an

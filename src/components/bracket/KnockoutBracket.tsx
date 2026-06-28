@@ -8,10 +8,10 @@ import type { Team } from '@/types/domain';
 type Mode = 'projected' | 'official';
 
 /**
- * Flat, readable knockout bracket. Each round is a column; rounds narrow left to
- * right (32 → 16 → 8 → 4 → 1) into the champion. No 3D — just a clear tree you
- * can scan. In 'projected' mode the winning side and predicted scoreline are
- * highlighted; in 'official' mode empty slots read as TBD until the real draw.
+ * Knockout bracket as a single scrolling column: each round is a stacked glass
+ * section and the field funnels down (32 → 16 → 8 → 4 → 1) to the champion at
+ * the foot of the page. In 'projected' mode the winning side and predicted
+ * scoreline are highlighted; in 'official' mode empty slots read as TBD.
  */
 export function KnockoutBracket({
   proj,
@@ -35,62 +35,63 @@ export function KnockoutBracket({
   ];
 
   return (
-    <div className="overflow-x-auto pb-3 [scrollbar-width:thin]">
-      <div className="flex min-w-max items-stretch gap-2.5 sm:gap-4">
-        {columns.map((col) => (
-          <div key={col.short} className="flex w-[176px] shrink-0 flex-col sm:w-[196px]">
-            <h3 className="mb-2 text-center text-[11px] font-700 uppercase tracking-wide text-offwhite-dim">
+    <div className="space-y-4">
+      {columns.map((col) => (
+        <section key={col.short} className="surface rounded-xl p-3 sm:p-4">
+          <div className="mb-2.5 flex items-baseline justify-between">
+            <h3 className="text-[11px] font-700 uppercase tracking-wide text-offwhite-dim">
               {col.label}
             </h3>
-            <div className="flex flex-1 flex-col justify-around gap-2">
-              {col.ties.map((tie) => (
-                <TieCard
-                  key={tie.id}
-                  tie={tie}
-                  teams={teams}
-                  mode={mode}
-                  linkable={linkableIds.has(tie.id)}
-                />
-              ))}
-            </div>
+            <span className="text-[10px] text-offwhite-faint">
+              {col.ties.length} {col.ties.length === 1 ? 'tie' : 'ties'}
+            </span>
           </div>
-        ))}
-
-        {/* Champion */}
-        <div className="flex w-[176px] shrink-0 flex-col sm:w-[196px]">
-          <h3 className="mb-2 text-center text-[11px] font-700 uppercase tracking-wide text-gold-300">
-            Champion
-          </h3>
-          <div className="flex flex-1 flex-col justify-center">
-            <div className="surface-raised rounded-xl border border-gold-400/40 bg-gold-400/5 p-4 text-center">
-              <div className="mb-1 flex justify-center text-gold-300">
-                <TrophyIcon className="h-6 w-6" />
-              </div>
-              <div className="mt-1 flex items-center justify-center gap-1.5">
-                <Flag code={champion?.flagCode} title={champion?.name} className="h-4 w-6" />
-                <span className="font-display text-base font-700 text-offwhite">
-                  {champion?.name ?? 'TBD'}
-                </span>
-              </div>
-              {mode === 'projected' && (
-                <p className="mt-1 text-[9px] uppercase tracking-wide text-gold-300/80">
-                  Projected winner
-                </p>
-              )}
-            </div>
+          <div className="space-y-2">
+            {col.ties.map((tie) => (
+              <TieCard
+                key={tie.id}
+                tie={tie}
+                teams={teams}
+                mode={mode}
+                linkable={linkableIds.has(tie.id)}
+              />
+            ))}
           </div>
-        </div>
-      </div>
+        </section>
+      ))}
 
       {/* Third-place play-off */}
       {proj.third && (
-        <div className="mt-4 max-w-[200px]">
-          <h3 className="mb-2 text-[11px] font-700 uppercase tracking-wide text-offwhite-faint">
+        <section className="surface rounded-xl p-3 sm:p-4">
+          <h3 className="mb-2.5 text-[11px] font-700 uppercase tracking-wide text-offwhite-faint">
             Third place
           </h3>
           <TieCard tie={proj.third} teams={teams} mode={mode} linkable={false} />
-        </div>
+        </section>
       )}
+
+      {/* Champion — the destination at the foot of the scroll. */}
+      <section className="surface-raised relative overflow-hidden rounded-2xl border border-gold-400/40 bg-gold-400/5 p-5 text-center">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-20 left-1/2 h-48 w-72 -translate-x-1/2"
+          style={{ backgroundImage: 'radial-gradient(closest-side, rgba(240,180,41,0.28), transparent)' }}
+        />
+        <div className="relative">
+          <div className="mb-1 flex justify-center text-gold-300">
+            <TrophyIcon className="h-7 w-7" />
+          </div>
+          <p className="text-[11px] font-700 uppercase tracking-widest text-gold-300">
+            {mode === 'projected' ? 'Projected champion' : 'Champion'}
+          </p>
+          <div className="mt-1.5 flex items-center justify-center gap-2">
+            <Flag code={champion?.flagCode} title={champion?.name} className="h-5 w-7" />
+            <span className="font-display text-xl font-700 text-offwhite sm:text-2xl">
+              {champion?.name ?? 'TBD'}
+            </span>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
