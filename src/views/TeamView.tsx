@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
@@ -10,16 +10,11 @@ import { teamRatingTrajectory } from '@/model/predict';
 import { cn } from '@/lib/cn';
 import type { ResultChar } from '@/model/form';
 
-const TeamJerseyScene = lazy(() =>
-  import('@/three/TeamJerseyScene').then((m) => ({ default: m.TeamJerseyScene })),
-);
-
 export function TeamView() {
   const { teamId } = useParams();
   const teams = useStore((s) => s.teams);
   const matches = useStore((s) => s.matches);
   const ratings = useStore((s) => s.ratings);
-  const lowPower = useStore((s) => s.lowPower);
 
   const team = teamId ? teams[teamId] : undefined;
 
@@ -59,20 +54,19 @@ export function TeamView() {
         transition={{ duration: 0.4 }}
         className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-3"
       >
-        {/* Jersey */}
-        <div className="relative h-72 overflow-hidden rounded-2xl border border-pitch-700/40 bg-[radial-gradient(circle_at_50%_30%,#0a2e1f,#04150f)]">
-          {lowPower ? (
-            <div
-              className="h-full w-full"
-              style={{
-                background: `linear-gradient(160deg, ${team.colors.primary}, ${team.colors.secondary})`,
-              }}
-            />
-          ) : (
-            <Suspense fallback={<div className="h-full w-full skeleton" />}>
-              <TeamJerseyScene team={team} />
-            </Suspense>
-          )}
+        {/* Team colours + flag */}
+        <div
+          className="relative grid h-72 place-items-center overflow-hidden rounded-2xl border border-white/10"
+          style={{
+            background: `linear-gradient(160deg, ${team.colors.primary}, ${team.colors.secondary})`,
+          }}
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0.18),transparent_70%)]" />
+          <Flag
+            code={team.flagCode}
+            title={team.name}
+            className="relative h-20 w-32 rounded-md shadow-glass ring-1 ring-white/20"
+          />
         </div>
 
         {/* Identity + stats */}

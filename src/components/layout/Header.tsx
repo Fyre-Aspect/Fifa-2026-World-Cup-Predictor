@@ -7,11 +7,8 @@ import { NotificationBell } from './NotificationBell';
 import { DataSourceBadge } from './DataSourceBadge';
 
 const NAV = [
-  { to: '/', label: 'Globe', end: true },
-  { to: '/groups', label: 'Groups', end: false },
-  { to: '/knockouts', label: 'Knockouts', end: false },
+  { to: '/', label: 'Groups', end: true },
   { to: '/bracket', label: 'Bracket', end: false },
-  { to: '/model', label: 'Model', end: false },
 ] as const;
 
 export function Header() {

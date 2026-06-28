@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useStore } from '@/store/useStore';
 import { RESULTS_AS_OF } from '@/data/realResults';
 
@@ -24,7 +25,10 @@ export function Footer() {
           model estimate with real uncertainty. Predictions are shown with confidence
           bands and the model&rsquo;s own running accuracy — never as fact.
         </p>
-        <p className="flex shrink-0 items-center gap-3">
+        <p className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1">
+          <Link to="/model" className="font-600 text-gold-300 hover:text-gold-200">
+            How the model works
+          </Link>
           <span className="inline-flex items-center gap-1.5">
             <span
               className={`h-1.5 w-1.5 rounded-full ${

@@ -1,12 +1,10 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 
-// Route-level code splitting: heavy deps (recharts on the dashboard, three.js in
-// the scenes) only download when their view is actually visited.
-const GlobeView = lazy(() => import('@/views/GlobeView').then((m) => ({ default: m.GlobeView })));
+// Route-level code splitting: heavy deps (recharts on the dashboard) only
+// download when their view is actually visited.
 const GroupStageView = lazy(() => import('@/views/GroupStageView').then((m) => ({ default: m.GroupStageView })));
-const KnockoutsView = lazy(() => import('@/views/KnockoutsView').then((m) => ({ default: m.KnockoutsView })));
 const BracketView = lazy(() => import('@/views/BracketView').then((m) => ({ default: m.BracketView })));
 const MatchView = lazy(() => import('@/views/MatchView').then((m) => ({ default: m.MatchView })));
 const TeamView = lazy(() => import('@/views/TeamView').then((m) => ({ default: m.TeamView })));
@@ -27,9 +25,10 @@ export default function App() {
     <Layout>
       <Suspense fallback={<ViewFallback />}>
         <Routes>
-          <Route path="/" element={<GlobeView />} />
-          <Route path="/groups" element={<GroupStageView />} />
-          <Route path="/knockouts" element={<KnockoutsView />} />
+          <Route path="/" element={<GroupStageView />} />
+          {/* Legacy routes kept as redirects so old links/bookmarks still work. */}
+          <Route path="/groups" element={<Navigate to="/" replace />} />
+          <Route path="/knockouts" element={<Navigate to="/bracket" replace />} />
           <Route path="/bracket" element={<BracketView />} />
           <Route path="/match/:matchId" element={<MatchView />} />
           <Route path="/team/:teamId" element={<TeamView />} />
