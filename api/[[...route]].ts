@@ -11,7 +11,12 @@ import { handle } from 'hono/vercel';
  * to bundled mock/historical data instead of hard-failing.
  */
 
-export const config = { runtime: 'nodejs' };
+// Edge runtime: this is the runtime `hono/vercel`'s `handle` targets, and the
+// proxy only needs `fetch` + `process.env` (both available on Edge). The Node
+// runtime needs a different adapter (@hono/node-server/vercel) and was silently
+// failing on Vercel even though local dev — which calls app.fetch() directly —
+// worked fine.
+export const config = { runtime: 'edge' };
 
 const FOOTBALL_DATA_BASE = 'https://api.football-data.org/v4';
 const API_FOOTBALL_BASE = 'https://v3.football.api-sports.io';
