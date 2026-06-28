@@ -6,7 +6,7 @@ import { Flag } from '@/components/ui/Flag';
 import { cn } from '@/lib/cn';
 import { groupStandings, type StandingRow } from '@/lib/standings';
 import { ELO_SEED } from '@/model/eloSeed';
-import { mostLikelyScore } from '@/model/scoreline';
+import { predictedScoreline } from '@/model/scoreline';
 import { formatKickoff } from '@/lib/tournament';
 import { StatusDot } from '@/components/match/MatchStatusBadge';
 import { LiveNowBanner } from '@/components/match/LiveNowBanner';
@@ -210,7 +210,7 @@ function FixtureRow({
   const away = match.awayTeamId ? teams[match.awayTeamId] : undefined;
   const scheduled = match.status === 'scheduled';
   // Predicted scoreline is only shown for upcoming games — never next to a final.
-  const predicted = scheduled && prediction ? mostLikelyScore(prediction.xgHome, prediction.xgAway) : null;
+  const predicted = scheduled && prediction ? predictedScoreline(prediction.xgHome, prediction.xgAway) : null;
 
   return (
     <Link

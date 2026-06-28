@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { Flag } from '@/components/ui/Flag';
 import { latestCommentaryLine } from '@/lib/commentary';
-import { mostLikelyScore } from '@/model/scoreline';
+import { predictedScoreline } from '@/model/scoreline';
 import type { Match, MatchPrediction, Team } from '@/types/domain';
 
 /**
@@ -61,7 +61,7 @@ function LiveCard({
   const home = match.homeTeamId ? teams[match.homeTeamId] : undefined;
   const away = match.awayTeamId ? teams[match.awayTeamId] : undefined;
   const line = latestCommentaryLine(match, home?.name ?? 'Home', away?.name ?? 'Away');
-  const predicted = prediction ? mostLikelyScore(prediction.xgHome, prediction.xgAway) : null;
+  const predicted = prediction ? predictedScoreline(prediction.xgHome, prediction.xgAway) : null;
 
   return (
     <Link

@@ -3,7 +3,7 @@ import { useStore } from '@/store/useStore';
 import { Flag } from '@/components/ui/Flag';
 import { cn } from '@/lib/cn';
 import { formatKickoff } from '@/lib/tournament';
-import { mostLikelyScore } from '@/model/scoreline';
+import { predictedScoreline } from '@/model/scoreline';
 import { MatchStatusBadge } from '@/components/match/MatchStatusBadge';
 import type { Match } from '@/types/domain';
 
@@ -18,7 +18,7 @@ export function MatchRow({ match }: { match: Match }) {
   // alongside a final result, where it just reads as a contradiction.
   const predicted =
     match.status === 'scheduled' && prediction
-      ? mostLikelyScore(prediction.xgHome, prediction.xgAway)
+      ? predictedScoreline(prediction.xgHome, prediction.xgAway)
       : null;
 
   return (

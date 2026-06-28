@@ -2,8 +2,10 @@
  * Scoreline model. The blended prediction gives outcome probabilities and an
  * expected-goals (xG) estimate for each side; this turns those expected goals
  * into an actual predicted scoreline by treating each team's goals as a Poisson
- * process. That's the standard, well-behaved way to go from "Portugal are
- * expected to score ~1.9" to "the single most likely result is 2–1".
+ * process. The user-facing prediction (`predictedScoreline`) rounds those
+ * expected goals so a "score ~2.6" projects as 3, not the artificially low
+ * Poisson mode; the raw mode and the full grid remain available for the
+ * probability views.
  */
 
 const MAX_GOALS = 8;
@@ -43,10 +45,28 @@ export function scoreMatrix(xgHome: number, xgAway: number): Scoreline[] {
   return out;
 }
 
-/** The single most probable exact scoreline. */
+/** The single most probable exact scoreline (the mode of the joint grid). */
 export function mostLikelyScore(xgHome: number, xgAway: number): Scoreline {
   const matrix = scoreMatrix(xgHome, xgAway);
   return matrix.reduce((best, s) => (s.prob > best.prob ? s : best));
+}
+
+/**
+ * The scoreline we actually show as "the prediction". The Poisson *mode* is
+ * biased low — it collapses most matches onto 1–0/1–1 even when plenty of goals
+ * are expected — so instead we round each side's expected goals. That tracks the
+ * model's goal estimate directly, so strong attacks and mismatches surface as
+ * the higher, more varied scores you'd expect (3–1, 4–0, …) while even, low-xG
+ * games still land on a sensible 1–1. `prob` is that exact cell's likelihood.
+ */
+export function predictedScoreline(xgHome: number, xgAway: number): Scoreline {
+  const home = Math.round(Math.max(0, xgHome));
+  const away = Math.round(Math.max(0, xgAway));
+  return {
+    home,
+    away,
+    prob: poisson(home, Math.max(0.05, xgHome)) * poisson(away, Math.max(0.05, xgAway)),
+  };
 }
 
 /**

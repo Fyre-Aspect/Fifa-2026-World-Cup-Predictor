@@ -3,6 +3,7 @@ import {
   mostLikelyScore,
   outcomeFromXg,
   poisson,
+  predictedScoreline,
   scoreMatrix,
   topScorelines,
 } from './scoreline';
@@ -32,6 +33,27 @@ describe('mostLikelyScore', () => {
     const s = mostLikelyScore(0.4, 0.4);
     expect(s.home).toBe(0);
     expect(s.away).toBe(0);
+  });
+});
+
+describe('predictedScoreline', () => {
+  it('rounds expected goals, so a high-xG side projects a bigger score than the mode', () => {
+    const s = predictedScoreline(2.6, 1.6);
+    expect(s.home).toBe(3);
+    expect(s.away).toBe(2);
+    // The Poisson mode would undershoot this to 2–1.
+    const mode = mostLikelyScore(2.6, 1.6);
+    expect(s.home + s.away).toBeGreaterThan(mode.home + mode.away);
+  });
+
+  it('still lands on a sensible low draw for an even, low-scoring game', () => {
+    const s = predictedScoreline(1.3, 1.2);
+    expect(s).toMatchObject({ home: 1, away: 1 });
+  });
+
+  it('keeps the stronger side ahead', () => {
+    const s = predictedScoreline(3.1, 0.6);
+    expect(s.home).toBeGreaterThan(s.away);
   });
 });
 

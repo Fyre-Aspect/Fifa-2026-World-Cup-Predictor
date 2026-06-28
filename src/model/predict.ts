@@ -26,8 +26,15 @@ import type { InputDistributions, MarketTable, Outcome } from './types';
 
 /** Small bonus for the designated home side; WC venues are largely neutral. */
 const PREDICT_HOME_ADVANTAGE = 35;
-const BASELINE_TOTAL_GOALS = 2.6;
-const SUPREMACY = 0.7;
+/**
+ * Goal environment. The baseline total is set to a goal-rich modern-tournament
+ * level, and SUPREMACY controls how hard a favourite pulls its expected goals up
+ * (and its opponent's down). Higher SUPREMACY means lopsided games project the
+ * bigger, more varied scorelines you'd actually expect — 3–0, 3–1, 4–1 — rather
+ * than collapsing everything onto 1–0/2–1.
+ */
+const BASELINE_TOTAL_GOALS = 3.2;
+const SUPREMACY = 1.0;
 
 const STAGE_IMPORTANCE: Record<MatchStage, number> = {
   group: 1,

@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { Flag } from '@/components/ui/Flag';
 import { cn } from '@/lib/cn';
-import { mostLikelyScore } from '@/model/scoreline';
+import { predictedScoreline } from '@/model/scoreline';
 import { formatKickoff } from '@/lib/tournament';
 import {
   notifPermission,
@@ -138,7 +138,7 @@ export function NotificationBell() {
                       teams={teams}
                       predicted={
                         m.status === 'scheduled' && predictions[m.id]
-                          ? mostLikelyScore(predictions[m.id].xgHome, predictions[m.id].xgAway)
+                          ? predictedScoreline(predictions[m.id].xgHome, predictions[m.id].xgAway)
                           : null
                       }
                       onNavigate={() => setOpen(false)}

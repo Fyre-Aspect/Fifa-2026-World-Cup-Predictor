@@ -1,13 +1,13 @@
 import { motion } from 'framer-motion';
 import type { MatchPrediction } from '@/types/domain';
-import { mostLikelyScore, topScorelines, overProbability } from '@/model/scoreline';
+import { predictedScoreline, topScorelines, overProbability } from '@/model/scoreline';
 import { formatProbability } from '@/lib/format';
 
 /**
- * The predicted scoreline: the single most likely exact result derived from each
- * side's expected goals (Poisson), plus the next most likely scorelines and the
- * over-2.5-goals probability. This is the "match score" view — a concrete result
- * to sit alongside the win/draw/win probabilities.
+ * The predicted scoreline: each side's expected goals rounded to a concrete
+ * result, plus the most likely exact scorelines (with probabilities) and the
+ * over-2.5-goals chance. This is the "match score" view — a concrete result to
+ * sit alongside the win/draw/win probabilities.
  */
 export function ScorePrediction({
   prediction,
@@ -19,7 +19,7 @@ export function ScorePrediction({
   awayLabel: string;
 }) {
   const { xgHome, xgAway } = prediction;
-  const top = mostLikelyScore(xgHome, xgAway);
+  const top = predictedScoreline(xgHome, xgAway);
   const alts = topScorelines(xgHome, xgAway, 5);
   const over = overProbability(xgHome, xgAway, 2.5);
 
@@ -41,12 +41,12 @@ export function ScorePrediction({
         </motion.div>
       </div>
       <p className="mt-2 text-[11px] text-offwhite-faint">
-        Most likely scoreline · {formatProbability(top.prob)} of outcomes
+        Predicted score, from each side&rsquo;s expected goals
       </p>
 
       <div className="mt-4 space-y-1.5">
         <p className="text-[10px] font-600 uppercase tracking-wide text-offwhite-faint">
-          Other likely scores
+          Most likely exact scores
         </p>
         <div className="flex flex-wrap gap-1.5">
           {alts.map((s) => (
