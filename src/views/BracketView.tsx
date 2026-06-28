@@ -1,8 +1,8 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
-import { projectKnockouts } from '@/lib/knockout';
-import { projectedBracketMatches } from '@/lib/projectedBracket';
+import { projectedBracketMatches, projectedR32Matches } from '@/lib/projectedBracket';
+import { projectKnockouts, officialBracketSkeleton } from '@/lib/knockout';
 import { KnockoutBracket } from '@/components/bracket/KnockoutBracket';
 import { cn } from '@/lib/cn';
 
@@ -24,8 +24,14 @@ export function BracketView() {
   const [mode, setMode] = useState<Mode>('projected');
 
   const proj = useMemo(() => {
-    const source =
-      mode === 'projected' ? projectedBracketMatches(matches, teams, ratings) : matches;
+    // Official view: the real FIFA skeleton with its R32 filled by the actual
+    // qualifiers; later rounds stay open until the knockouts are played.
+    if (mode === 'official') {
+      return officialBracketSkeleton(projectedR32Matches(matches, teams, ratings));
+    }
+    // Projected view: fill that same skeleton with the qualifiers and simulate
+    // every round to a champion.
+    const source = projectedBracketMatches(matches, teams, ratings);
     return projectKnockouts(source, ratings, weights, predictions);
   }, [mode, matches, teams, ratings, weights, predictions]);
 
@@ -50,7 +56,7 @@ export function BracketView() {
         <p className="mt-3 max-w-2xl text-sm font-500 text-offwhite">
           {mode === 'projected'
             ? 'A predicted bracket: we take who is on course to qualify from each group and play it out to a winner. It updates as results come in — a prediction, not the real draw.'
-            : 'The real bracket. Slots stay empty until results and the draw decide who fills them.'}
+            : 'The official FIFA 2026 bracket. The Round of 32 is set — each fixed group-position slot now carries its qualified team; the later rounds fill in as the knockouts are played.'}
         </p>
       </motion.header>
 

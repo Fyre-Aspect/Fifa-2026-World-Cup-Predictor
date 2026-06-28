@@ -37,23 +37,43 @@ describe('mostLikelyScore', () => {
 });
 
 describe('predictedScoreline', () => {
-  it('rounds expected goals, so a high-xG side projects a bigger score than the mode', () => {
-    const s = predictedScoreline(2.6, 1.6);
-    expect(s.home).toBe(3);
-    expect(s.away).toBe(2);
-    // The Poisson mode would undershoot this to 2–1.
-    const mode = mostLikelyScore(2.6, 1.6);
-    expect(s.home + s.away).toBeGreaterThan(mode.home + mode.away);
+  it('is deterministic for a given match seed', () => {
+    expect(predictedScoreline(2.1, 1.4, 'MATCH-42')).toEqual(
+      predictedScoreline(2.1, 1.4, 'MATCH-42'),
+    );
   });
 
-  it('still lands on a sensible low draw for an even, low-scoring game', () => {
-    const s = predictedScoreline(1.3, 1.2);
-    expect(s).toMatchObject({ home: 1, away: 1 });
+  it('varies across matches and surfaces high-scoring games', () => {
+    const scores = new Set<string>();
+    let maxTotal = 0;
+    for (let i = 0; i < 80; i++) {
+      const s = predictedScoreline(2.0, 1.6, `M-${i}`);
+      scores.add(`${s.home}-${s.away}`);
+      maxTotal = Math.max(maxTotal, s.home + s.away);
+    }
+    // Genuine spread of scorelines, not one modal result...
+    expect(scores.size).toBeGreaterThan(6);
+    // ...including the occasional high-scoring game.
+    expect(maxTotal).toBeGreaterThanOrEqual(5);
   });
 
-  it('keeps the stronger side ahead', () => {
-    const s = predictedScoreline(3.1, 0.6);
-    expect(s.home).toBeGreaterThan(s.away);
+  it('favours the stronger side on average', () => {
+    let home = 0;
+    let away = 0;
+    for (let i = 0; i < 300; i++) {
+      const s = predictedScoreline(2.6, 0.9, `S-${i}`);
+      home += s.home;
+      away += s.away;
+    }
+    expect(home).toBeGreaterThan(away);
+  });
+
+  it('never exceeds the goal cap', () => {
+    for (let i = 0; i < 50; i++) {
+      const s = predictedScoreline(7, 7, `C-${i}`);
+      expect(s.home).toBeLessThanOrEqual(8);
+      expect(s.away).toBeLessThanOrEqual(8);
+    }
   });
 });
 

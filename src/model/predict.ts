@@ -33,7 +33,7 @@ const PREDICT_HOME_ADVANTAGE = 35;
  * bigger, more varied scorelines you'd actually expect — 3–0, 3–1, 4–1 — rather
  * than collapsing everything onto 1–0/2–1.
  */
-const BASELINE_TOTAL_GOALS = 3.2;
+const BASELINE_TOTAL_GOALS = 3.4;
 const SUPREMACY = 1.0;
 
 const STAGE_IMPORTANCE: Record<MatchStage, number> = {

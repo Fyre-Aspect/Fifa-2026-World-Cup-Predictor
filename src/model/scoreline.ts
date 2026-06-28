@@ -2,10 +2,10 @@
  * Scoreline model. The blended prediction gives outcome probabilities and an
  * expected-goals (xG) estimate for each side; this turns those expected goals
  * into an actual predicted scoreline by treating each team's goals as a Poisson
- * process. The user-facing prediction (`predictedScoreline`) rounds those
- * expected goals so a "score ~2.6" projects as 3, not the artificially low
- * Poisson mode; the raw mode and the full grid remain available for the
- * probability views.
+ * process. The user-facing prediction (`predictedScoreline`) draws one plausible
+ * result from those Poissons — seeded per match — so the fixture list shows the
+ * real spread of scores (including high-scoring games) instead of a wall of low
+ * modal results; the raw mode and the full grid remain for the probability views.
  */
 
 const MAX_GOALS = 8;
@@ -52,16 +52,49 @@ export function mostLikelyScore(xgHome: number, xgAway: number): Scoreline {
 }
 
 /**
- * The scoreline we actually show as "the prediction". The Poisson *mode* is
- * biased low — it collapses most matches onto 1–0/1–1 even when plenty of goals
- * are expected — so instead we round each side's expected goals. That tracks the
- * model's goal estimate directly, so strong attacks and mismatches surface as
- * the higher, more varied scores you'd expect (3–1, 4–0, …) while even, low-xG
- * games still land on a sensible 1–1. `prob` is that exact cell's likelihood.
+ * Deterministic RNG (mulberry32) seeded from a string. Seeding per match keeps a
+ * game's predicted scoreline stable across renders while letting it differ from
+ * match to match.
  */
-export function predictedScoreline(xgHome: number, xgAway: number): Scoreline {
-  const home = Math.round(Math.max(0, xgHome));
-  const away = Math.round(Math.max(0, xgAway));
+function seededRng(seed: string): () => number {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  let a = h >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** One Poisson(lambda) draw via Knuth's algorithm, clamped to MAX_GOALS. */
+function samplePoisson(lambda: number, rng: () => number): number {
+  const L = Math.exp(-Math.max(0.05, lambda));
+  let k = 0;
+  let p = 1;
+  do {
+    k += 1;
+    p *= rng();
+  } while (p > L && k <= MAX_GOALS + 1);
+  return Math.min(MAX_GOALS, k - 1);
+}
+
+/**
+ * The scoreline we show as "the prediction". Returning the mean (or the Poisson
+ * mode) collapses nearly every game onto 1–0/2–1; instead we draw one plausible
+ * result from each side's Poisson, seeded by the match so it's stable. Across the
+ * fixture list this gives the real spread of football — plenty of tight games,
+ * but also the 3–2s, 4–1s and the occasional 5–3, with favourites posting the
+ * odd hat-trick — rather than a wall of identical low scores.
+ */
+export function predictedScoreline(xgHome: number, xgAway: number, seed = ''): Scoreline {
+  const rng = seededRng(seed || `${xgHome.toFixed(2)}:${xgAway.toFixed(2)}`);
+  const home = samplePoisson(xgHome, rng);
+  const away = samplePoisson(xgAway, rng);
   return {
     home,
     away,

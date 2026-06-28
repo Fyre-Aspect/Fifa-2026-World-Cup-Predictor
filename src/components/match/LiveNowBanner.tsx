@@ -61,7 +61,7 @@ function LiveCard({
   const home = match.homeTeamId ? teams[match.homeTeamId] : undefined;
   const away = match.awayTeamId ? teams[match.awayTeamId] : undefined;
   const line = latestCommentaryLine(match, home?.name ?? 'Home', away?.name ?? 'Away');
-  const predicted = prediction ? predictedScoreline(prediction.xgHome, prediction.xgAway) : null;
+  const predicted = prediction ? predictedScoreline(prediction.xgHome, prediction.xgAway, match.id) : null;
 
   return (
     <Link

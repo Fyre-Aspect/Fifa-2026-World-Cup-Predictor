@@ -2,6 +2,7 @@ import type { Match, Team } from '@/types/domain';
 import type { EloRatings } from '@/model/elo';
 import { ELO_SEED } from '@/model/eloSeed';
 import { groupStandings } from './standings';
+import { R32_POSITIONS } from './bracketSkeleton';
 
 /**
  * Seeds a *projected* Round of 32 onto the **official FIFA 2026 bracket
@@ -18,30 +19,6 @@ import { groupStandings } from './standings';
  * third-place *allocation* (which third faces which group winner) follows FIFA's
  * same-group-avoidance rule rather than the full 495-row combination table.
  */
-
-/**
- * Official Round-of-32 pairings, matches 73–88 in order. Codes: `1x` = winner of
- * group x, `2x` = runner-up of group x, `3` = a third-placed team. This order is
- * canonical — `projectKnockouts` walks the real bracket tree over these indices.
- */
-const R32_POSITIONS: ReadonlyArray<readonly [string, string]> = [
-  ['2A', '2B'], // 73
-  ['1E', '3'], //  74
-  ['1F', '2C'], // 75
-  ['1C', '2F'], // 76
-  ['1I', '3'], //  77
-  ['2E', '2I'], // 78
-  ['1A', '3'], //  79
-  ['1L', '3'], //  80
-  ['1D', '3'], //  81
-  ['1G', '3'], //  82
-  ['2K', '2L'], // 83
-  ['1H', '2J'], // 84
-  ['1B', '3'], //  85
-  ['1J', '2H'], // 86
-  ['1K', '3'], //  87
-  ['2D', '2G'], // 88
-];
 
 interface ThirdRow {
   teamId: string;

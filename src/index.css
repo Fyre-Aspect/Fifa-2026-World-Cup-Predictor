@@ -123,6 +123,58 @@
   .display-num {
     @apply font-display tabular tracking-tight;
   }
+
+  /* ---- Connected knockout bracket ---------------------------------- */
+  /* A recursive binary tree: every match is drawn centred between the two that
+     feed it (flex `align-items: center`), with an SVG connector in the gap. The
+     bracket is balanced, so each connector's branch points are always at 25% and
+     75% — alignment holds at every depth, no magic numbers per round. */
+  .bkt {
+    --card-w: 11rem;
+    --conn-w: 1.75rem;
+    --bkt-line: rgba(233, 245, 255, 0.22);
+  }
+  @media (min-width: 640px) {
+    .bkt {
+      --card-w: 12.25rem;
+    }
+  }
+  .bkt-head {
+    display: flex;
+    gap: var(--conn-w);
+    min-width: max-content;
+    margin-bottom: 0.5rem;
+  }
+  .bkt-head-col {
+    width: var(--card-w);
+    flex: none;
+    text-align: center;
+  }
+  .bkt-node {
+    display: flex;
+    align-items: center;
+    min-width: max-content;
+  }
+  .bkt-children {
+    display: flex;
+    flex-direction: column;
+  }
+  .bkt-card {
+    width: var(--card-w);
+    flex: none;
+    padding: 0.3rem 0;
+  }
+  .bkt-conn {
+    width: var(--conn-w);
+    flex: none;
+    align-self: stretch;
+  }
+  .bkt-conn path {
+    fill: none;
+    stroke: var(--bkt-line);
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+  }
 }
 
 @layer utilities {

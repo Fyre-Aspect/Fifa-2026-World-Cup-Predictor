@@ -19,7 +19,7 @@ export function ScorePrediction({
   awayLabel: string;
 }) {
   const { xgHome, xgAway } = prediction;
-  const top = predictedScoreline(xgHome, xgAway);
+  const top = predictedScoreline(xgHome, xgAway, prediction.matchId);
   const alts = topScorelines(xgHome, xgAway, 5);
   const over = overProbability(xgHome, xgAway, 2.5);
 
@@ -41,7 +41,7 @@ export function ScorePrediction({
         </motion.div>
       </div>
       <p className="mt-2 text-[11px] text-offwhite-faint">
-        Predicted score, from each side&rsquo;s expected goals
+        A plausible scoreline drawn from each side&rsquo;s expected goals
       </p>
 
       <div className="mt-4 space-y-1.5">

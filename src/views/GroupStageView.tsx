@@ -210,7 +210,7 @@ function FixtureRow({
   const away = match.awayTeamId ? teams[match.awayTeamId] : undefined;
   const scheduled = match.status === 'scheduled';
   // Predicted scoreline is only shown for upcoming games — never next to a final.
-  const predicted = scheduled && prediction ? predictedScoreline(prediction.xgHome, prediction.xgAway) : null;
+  const predicted = scheduled && prediction ? predictedScoreline(prediction.xgHome, prediction.xgAway, match.id) : null;
 
   return (
     <Link

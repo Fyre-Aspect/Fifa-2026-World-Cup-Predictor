@@ -138,7 +138,7 @@ export function NotificationBell() {
                       teams={teams}
                       predicted={
                         m.status === 'scheduled' && predictions[m.id]
-                          ? predictedScoreline(predictions[m.id].xgHome, predictions[m.id].xgAway)
+                          ? predictedScoreline(predictions[m.id].xgHome, predictions[m.id].xgAway, m.id)
                           : null
                       }
                       onNavigate={() => setOpen(false)}

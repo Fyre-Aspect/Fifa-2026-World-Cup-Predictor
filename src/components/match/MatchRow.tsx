@@ -18,7 +18,7 @@ export function MatchRow({ match }: { match: Match }) {
   // alongside a final result, where it just reads as a contradiction.
   const predicted =
     match.status === 'scheduled' && prediction
-      ? predictedScoreline(prediction.xgHome, prediction.xgAway)
+      ? predictedScoreline(prediction.xgHome, prediction.xgAway, match.id)
       : null;
 
   return (

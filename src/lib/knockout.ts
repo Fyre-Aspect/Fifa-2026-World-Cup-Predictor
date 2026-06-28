@@ -3,6 +3,7 @@ import type { EloRatings } from '@/model/elo';
 import { buildFormTable } from '@/model/form';
 import { predictMatch } from '@/model/predict';
 import { mostLikelyDecisiveScore, type Scoreline } from '@/model/scoreline';
+import { R32_POSITIONS, slotLabel } from './bracketSkeleton';
 
 /**
  * Forward projection of the knockout bracket. The Round of 32 is seeded from the
@@ -51,6 +52,9 @@ export interface ProjectedTie {
   cityId: string;
   homeId: string | null;
   awayId: string | null;
+  /** Position label (e.g. "Runner-up A") shown when a slot has no team yet. */
+  homeLabel?: string | null;
+  awayLabel?: string | null;
   prediction: MatchPrediction | null;
   scoreline: Scoreline | null;
   winnerId: string | null;
@@ -71,6 +75,50 @@ export interface ProjectedKnockouts {
 function loserOf(tie: ProjectedTie): string | null {
   if (!tie.winnerId) return null;
   return tie.winnerId === tie.homeId ? tie.awayId : tie.homeId;
+}
+
+/** An empty tie placeholder (no teams, no prediction). */
+function emptyTie(id: string, stage: MatchStage): ProjectedTie {
+  return {
+    id,
+    stage,
+    kickoff: '',
+    cityId: '',
+    homeId: null,
+    awayId: null,
+    homeLabel: null,
+    awayLabel: null,
+    prediction: null,
+    scoreline: null,
+    winnerId: null,
+    aet: false,
+  };
+}
+
+/**
+ * The official 2026 bracket. The Round of 32 carries its fixed group-position
+ * slots ("Winner A", "Runner-up B", "3rd place"); once the group stage is
+ * decided, `seededR32` fills those slots with the actual qualified teams (in the
+ * same canonical match order). Later rounds stay TBD until the knockouts are
+ * played — no projection, no invented matchups. For the "Official" view.
+ */
+export function officialBracketSkeleton(seededR32: Match[] = []): ProjectedKnockouts {
+  const round32 = R32_POSITIONS.map(([home, away], i) => ({
+    ...emptyTie(`OFF-R32-${i + 1}`, 'round32' as MatchStage),
+    homeId: seededR32[i]?.homeTeamId ?? null,
+    awayId: seededR32[i]?.awayTeamId ?? null,
+    homeLabel: slotLabel(home),
+    awayLabel: slotLabel(away),
+  }));
+  return {
+    round32,
+    round16: Array.from({ length: 8 }, (_, i) => emptyTie(`OFF-R16-${i + 1}`, 'round16')),
+    quarter: Array.from({ length: 4 }, (_, i) => emptyTie(`OFF-QF-${i + 1}`, 'quarter')),
+    semi: Array.from({ length: 2 }, (_, i) => emptyTie(`OFF-SF-${i + 1}`, 'semi')),
+    final: emptyTie('OFF-FIN', 'final'),
+    third: emptyTie('OFF-TP', 'third'),
+    championId: null,
+  };
 }
 
 export function projectKnockouts(
