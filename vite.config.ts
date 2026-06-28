@@ -23,7 +23,7 @@ function honoApiDev(): Plugin {
         if (!path.startsWith('/api')) return next();
         try {
           // Vite transpiles the TS handler on the fly and gives us its exports.
-          const mod = await server.ssrLoadModule('/api/[[...route]].ts');
+          const mod = await server.ssrLoadModule('/api/[...route].ts');
           const app = mod.app as { fetch: (request: Request) => Promise<Response> };
 
           const host = req.headers.host ?? 'localhost';
