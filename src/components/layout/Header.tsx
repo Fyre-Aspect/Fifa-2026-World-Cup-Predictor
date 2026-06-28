@@ -9,6 +9,7 @@ import { DataSourceBadge } from './DataSourceBadge';
 const NAV = [
   { to: '/', label: 'Groups', end: true },
   { to: '/bracket', label: 'Bracket', end: false },
+  { to: '/teams', label: 'Teams', end: false },
 ] as const;
 
 export function Header() {

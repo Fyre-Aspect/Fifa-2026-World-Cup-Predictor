@@ -85,21 +85,18 @@ export function TeamView() {
           </div>
 
           <div className="mt-4 grid grid-cols-3 gap-3">
-            <Stat label="Current Elo" value={elo != null ? String(elo) : '—'} />
+            <Stat label="Rating" value={elo != null ? String(elo) : '—'} />
             <Stat
               label="Recent form"
               value={form ? `${form.games} games` : 'No data'}
               children={form ? <FormChips recent={form.recent} /> : undefined}
             />
-            <Stat
-              label="Matches here"
-              value={String(teamMatches.length)}
-            />
+            <Stat label="Matches" value={String(teamMatches.length)} />
           </div>
 
           <div className="surface mt-4 p-4">
             <h2 className="mb-2 text-sm font-600 uppercase tracking-wider text-offwhite-dim">
-              Elo trajectory
+              Rating over time
             </h2>
             <EloTrajectoryChart points={trajectory} />
           </div>

@@ -32,7 +32,6 @@ export function GroupStageView() {
   const teams = useStore((s) => s.teams);
   const predictions = useStore((s) => s.predictions);
   const dataSource = useStore((s) => s.dataSource);
-  const dataProvider = useStore((s) => s.dataProvider);
 
   const groups = useMemo(() => {
     const groupMatches = matches.filter((m) => m.stage === 'group' && m.group);
@@ -58,20 +57,19 @@ export function GroupStageView() {
         transition={{ duration: 0.4, ease: 'easeOut' }}
         className="mb-6 max-w-2xl"
       >
-        <p className="text-xs font-600 uppercase tracking-widest text-gold-300">Group stage</p>
-        <h1 className="mt-2 font-display text-4xl font-700 tracking-tight text-offwhite">
-          Twelve groups, thirty-two tickets out
+        <h1 className="font-display text-3xl font-700 tracking-tight text-offwhite sm:text-4xl">
+          Group stage
         </h1>
         <div className="mt-3 h-0.5 w-24 rule-fifa" />
         <p className="mt-3 text-offwhite-dim">
-          Live tables and every fixture. Played games show the actual result; upcoming
-          games show the model&rsquo;s predicted scoreline. Top two of each group, plus
-          the eight best third-placed teams, reach the Round of 32.
+          Standings and fixtures for all 12 groups. Finished games show the real score;
+          games still to come show a predicted score. The top two from each group go
+          through to the knockouts.
         </p>
         <p className="mt-2 text-xs text-offwhite-faint">
           {dataSource === 'live'
-            ? `Live results via ${dataProvider ?? 'the live feed'}, refreshing while matches are in progress.`
-            : `Real results captured as a snapshot on ${snapshotDate} — not a live feed. Fixtures without a captured result are shown as upcoming.`}
+            ? `Live scores, updating as games are played.`
+            : `Saved scores from ${snapshotDate} — not live right now.`}
         </p>
       </motion.header>
 
@@ -260,10 +258,10 @@ function FixtureRow({
           formatKickoff(match.kickoff)
         ) : predMark != null ? (
           <span
-            title={predMark ? 'Model called it right' : 'Model called it wrong'}
+            title={predMark ? 'Prediction was right' : 'Prediction was wrong'}
             className={predMark ? 'text-emerald-300' : 'text-offwhite-faint'}
           >
-            {predMark ? '✓ pred' : '✗ pred'}
+            {predMark ? '✓' : '✗'}
           </span>
         ) : (
           'FT'

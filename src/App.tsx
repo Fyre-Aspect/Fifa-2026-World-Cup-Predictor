@@ -6,6 +6,7 @@ import { Layout } from '@/components/layout/Layout';
 // download when their view is actually visited.
 const GroupStageView = lazy(() => import('@/views/GroupStageView').then((m) => ({ default: m.GroupStageView })));
 const BracketView = lazy(() => import('@/views/BracketView').then((m) => ({ default: m.BracketView })));
+const TeamsView = lazy(() => import('@/views/TeamsView').then((m) => ({ default: m.TeamsView })));
 const MatchView = lazy(() => import('@/views/MatchView').then((m) => ({ default: m.MatchView })));
 const TeamView = lazy(() => import('@/views/TeamView').then((m) => ({ default: m.TeamView })));
 const DashboardView = lazy(() => import('@/views/DashboardView').then((m) => ({ default: m.DashboardView })));
@@ -30,6 +31,7 @@ export default function App() {
           <Route path="/groups" element={<Navigate to="/" replace />} />
           <Route path="/knockouts" element={<Navigate to="/bracket" replace />} />
           <Route path="/bracket" element={<BracketView />} />
+          <Route path="/teams" element={<TeamsView />} />
           <Route path="/match/:matchId" element={<MatchView />} />
           <Route path="/team/:teamId" element={<TeamView />} />
           <Route path="/model" element={<DashboardView />} />
