@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Flag } from '@/components/ui/Flag';
-import { WorldCupEmblem } from '@/components/ui/Icons';
+import { WorldCupLogo } from '@/components/ui/WorldCupLogo';
 import { cn } from '@/lib/cn';
 import type { ProjectedKnockouts, ProjectedTie } from '@/lib/knockout';
 import type { Team } from '@/types/domain';
@@ -69,7 +69,7 @@ export function KnockoutBracket({
                 style={{ backgroundImage: 'radial-gradient(closest-side, rgba(240,180,41,0.28), transparent)' }}
               />
               <div className="relative flex items-center justify-center gap-2">
-                <WorldCupEmblem className="h-10 w-10 shrink-0 drop-shadow-[0_2px_6px_rgba(240,180,41,0.4)]" />
+                <WorldCupLogo className="h-12 w-10 shrink-0 drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]" />
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
                     <Flag code={champion?.flagCode} title={champion?.name} className="h-4 w-6 shrink-0" />

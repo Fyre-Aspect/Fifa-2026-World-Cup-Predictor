@@ -98,6 +98,24 @@ export function topPlayers(teamId: string | null | undefined, n = 6): Player[] {
   return [...squad].sort((a, b) => effectiveRating(b) - effectiveRating(a)).slice(0, n);
 }
 
+const POSITION_ORDER: Record<Player['position'], number> = { GK: 0, DF: 1, MF: 2, FW: 3 };
+
+/**
+ * The full curated squad, ordered like a team sheet — goalkeeper, then defence,
+ * midfield and attack, strongest first within each line. Empty when no squad is
+ * curated for the team.
+ */
+export function fullSquad(teamId: string | null | undefined): Player[] {
+  if (!teamId) return [];
+  const squad = SQUADS[teamId.toUpperCase()];
+  if (!squad) return [];
+  return [...squad].sort(
+    (a, b) =>
+      POSITION_ORDER[a.position] - POSITION_ORDER[b.position] ||
+      effectiveRating(b) - effectiveRating(a),
+  );
+}
+
 /** Count of a team's key players plying their trade in a top-5 European league. */
 export function topLeagueCount(teamId: string | null | undefined): number {
   if (!teamId) return 0;

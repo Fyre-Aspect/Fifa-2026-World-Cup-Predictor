@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { Flag } from '@/components/ui/Flag';
 import { MatchRow } from '@/components/match/MatchRow';
+import { TeamSquad } from '@/components/team/TeamSquad';
 import { EloTrajectoryChart } from '@/components/model/EloTrajectoryChart';
 import { buildFormTable } from '@/model/form';
 import { teamRatingTrajectory } from '@/model/predict';
@@ -102,6 +103,9 @@ export function TeamView() {
           </div>
         </div>
       </motion.div>
+
+      {/* Squad */}
+      <TeamSquad team={team} />
 
       {/* Matches */}
       <section className="surface mt-4 p-5">
