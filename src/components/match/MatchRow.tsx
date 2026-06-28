@@ -3,14 +3,26 @@ import { useStore } from '@/store/useStore';
 import { Flag } from '@/components/ui/Flag';
 import { cn } from '@/lib/cn';
 import { formatKickoff } from '@/lib/tournament';
+import { mostLikelyScore } from '@/model/scoreline';
+import { argmaxOutcome } from '@/model/probability';
+import { labelFromScore } from '@/model/scoring';
 import { MatchStatusBadge } from '@/components/match/MatchStatusBadge';
 import type { Match } from '@/types/domain';
 
 /** Compact, clickable 2D representation of a single match. */
 export function MatchRow({ match }: { match: Match }) {
   const teams = useStore((s) => s.teams);
+  const prediction = useStore((s) => s.predictions[match.id]);
   const home = match.homeTeamId ? teams[match.homeTeamId] : undefined;
   const away = match.awayTeamId ? teams[match.awayTeamId] : undefined;
+
+  const predicted = prediction
+    ? mostLikelyScore(prediction.xgHome, prediction.xgAway)
+    : null;
+  const predRight =
+    match.status === 'finished' && match.score && prediction
+      ? argmaxOutcome(prediction) === labelFromScore(match.score)
+      : null;
 
   return (
     <Link
@@ -23,24 +35,34 @@ export function MatchRow({ match }: { match: Match }) {
           flag={home?.flagCode}
           score={match.score?.home}
           finished={match.status === 'finished'}
-          winner={
-            match.score != null && match.score.home > match.score.away
-          }
+          winner={match.score != null && match.score.home > match.score.away}
         />
         <TeamLine
           name={away?.name ?? 'TBD'}
           flag={away?.flagCode}
           score={match.score?.away}
           finished={match.status === 'finished'}
-          winner={
-            match.score != null && match.score.away > match.score.home
-          }
+          winner={match.score != null && match.score.away > match.score.home}
         />
       </div>
       <div className="shrink-0 text-right">
         <MatchStatusBadge status={match.status} minute={match.minute} />
         <div className="mt-1 text-[11px] text-offwhite-faint">
-          {formatKickoff(match.kickoff)}
+          {match.status === 'scheduled' ? formatKickoff(match.kickoff) : null}
+          {predicted && (
+            <span
+              className={cn(
+                'display-num',
+                predRight === true && 'text-emerald-300',
+                predRight === false && 'text-red-300/80',
+              )}
+              title={`Model predicted ${predicted.home}–${predicted.away}`}
+            >
+              {match.status === 'scheduled' ? ' · ' : ''}
+              Predicted {predicted.home}–{predicted.away}
+              {predRight === true ? ' ✓' : predRight === false ? ' ✗' : ''}
+            </span>
+          )}
         </div>
       </div>
     </Link>

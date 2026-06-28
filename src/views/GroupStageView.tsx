@@ -12,6 +12,7 @@ import { labelFromScore } from '@/model/scoring';
 import { formatKickoff } from '@/lib/tournament';
 import { StatusDot } from '@/components/match/MatchStatusBadge';
 import { LiveNowBanner } from '@/components/match/LiveNowBanner';
+import { ModelScoreboard } from '@/components/model/ModelScoreboard';
 import { RESULTS_AS_OF } from '@/data/realResults';
 import type { Match, MatchPrediction, Team } from '@/types/domain';
 
@@ -75,10 +76,12 @@ export function GroupStageView() {
 
       <LiveNowBanner />
 
+      <ModelScoreboard />
+
       <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-offwhite-faint">
         <span className="font-600 uppercase tracking-wide">Key</span>
-        <Legend status="finished" label="Full time" />
-        <Legend status="live" label="Live now" />
+        <Legend status="live" label="Being played now" />
+        <Legend status="finished" label="Played · predicted vs actual" />
         <Legend status="scheduled" label="Upcoming · predicted score" />
       </div>
 
@@ -251,17 +254,17 @@ function FixtureRow({
       <span className="min-w-0 flex-1 truncate text-offwhite-dim group-hover:text-offwhite">
         {away?.name ?? 'TBD'}
       </span>
-      <span className="hidden w-14 shrink-0 text-right text-[10px] text-offwhite-faint sm:block">
+      <span className="w-[4.75rem] shrink-0 text-right text-[10px] text-offwhite-faint">
         {match.status === 'live' ? (
-          <span className="text-red-300">{match.minute ?? ''}&rsquo;</span>
+          <span className="font-700 text-red-300">{match.minute ? `${match.minute}'` : 'LIVE'}</span>
         ) : scheduled ? (
           formatKickoff(match.kickoff)
-        ) : predMark != null ? (
+        ) : predicted && predMark != null ? (
           <span
-            title={predMark ? 'Prediction was right' : 'Prediction was wrong'}
-            className={predMark ? 'text-emerald-300' : 'text-offwhite-faint'}
+            title={`Predicted ${predicted.home}–${predicted.away} · ${predMark ? 'right' : 'wrong'}`}
+            className={cn('display-num', predMark ? 'text-emerald-300' : 'text-red-300/80')}
           >
-            {predMark ? '✓' : '✗'}
+            {predMark ? '✓' : '✗'} {predicted.home}–{predicted.away}
           </span>
         ) : (
           'FT'
