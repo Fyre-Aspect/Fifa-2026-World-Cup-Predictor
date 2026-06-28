@@ -10,12 +10,12 @@ export function PitchField() {
 
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-      {/* Grass: deep night-match green fading into the page navy at the foot. */}
+      {/* Grass: lit night-match green fading into the page navy at the foot. */}
       <div
         className="absolute inset-0"
         style={{
           backgroundImage:
-            'linear-gradient(180deg,#0c3a2c 0%,#0a3026 42%,#082720 74%,#070b1c 100%)',
+            'linear-gradient(180deg,#0f6b41 0%,#0c5836 40%,#0a3f29 72%,#070b1c 100%)',
         }}
       />
       {/* Mowed stripes. */}

@@ -18,7 +18,7 @@ export function PitchFieldScene() {
         powerPreference: 'high-performance',
         toneMapping: THREE.ACESFilmicToneMapping,
       }}
-      camera={{ position: [0, 3.4, 12], fov: 58, near: 0.1, far: 400 }}
+      camera={{ position: [0, 17, 100], fov: 60, near: 0.1, far: 400 }}
     >
       <PitchField3D />
       <AdaptiveDpr pixelated />
