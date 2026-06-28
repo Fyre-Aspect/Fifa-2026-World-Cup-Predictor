@@ -53,18 +53,18 @@ export function GroupStageView() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="mb-6 max-w-2xl"
+        className="mb-6 max-w-2xl text-pop"
       >
-        <h1 className="font-display text-3xl font-700 tracking-tight text-offwhite sm:text-4xl">
+        <h1 className="font-display text-4xl font-800 tracking-tight text-offwhite sm:text-5xl">
           Group stage
         </h1>
         <div className="mt-3 h-0.5 w-24 rule-fifa" />
-        <p className="mt-3 text-offwhite-dim">
+        <p className="mt-3 font-500 text-offwhite">
           Standings and fixtures for all 12 groups. Finished games show the real score;
           games still to come show a predicted score. The top two from each group go
           through to the knockouts.
         </p>
-        <p className="mt-2 text-xs text-offwhite-faint">
+        <p className="mt-2 text-xs font-500 text-offwhite-dim">
           {dataSource === 'live'
             ? `Live scores, updating as games are played.`
             : `Saved scores from ${snapshotDate} — not live right now.`}
@@ -73,8 +73,8 @@ export function GroupStageView() {
 
       <LiveNowBanner />
 
-      <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-offwhite-faint">
-        <span className="font-600 uppercase tracking-wide">Key</span>
+      <div className="text-pop mb-5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] font-500 text-offwhite-dim">
+        <span className="font-700 uppercase tracking-wide text-offwhite">Key</span>
         <Legend status="live" label="Being played now" />
         <Legend status="finished" label="Played · final score" />
         <Legend status="scheduled" label="Upcoming · predicted score" />

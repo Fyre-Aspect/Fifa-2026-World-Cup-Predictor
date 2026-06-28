@@ -26,10 +26,11 @@ function makePitchTexture(): THREE.CanvasTexture {
   c.height = lPx;
   const ctx = c.getContext('2d')!;
 
-  // Grass + mowed stripes running goal-to-goal.
+  // Grass + mowed stripes running goal-to-goal. Kept a touch deeper so light
+  // text on top of the field stays readable.
   const stripes = 10;
   for (let i = 0; i < stripes; i++) {
-    ctx.fillStyle = i % 2 === 0 ? '#0f7a48' : '#0c6b3f';
+    ctx.fillStyle = i % 2 === 0 ? '#0c633c' : '#0a5733';
     ctx.fillRect((i / stripes) * wPx, 0, wPx / stripes + 1, lPx);
   }
 
@@ -138,10 +139,10 @@ export function PitchField3D() {
       <color attach="background" args={['#070b1c']} />
       <fog attach="fog" args={['#08151a', 46, 215]} />
 
-      <ambientLight intensity={0.55} color="#d6f0e2" />
-      <hemisphereLight color="#eafff2" groundColor="#0a3322" intensity={0.85} />
-      <directionalLight position={[12, 24, 10]} intensity={1.6} color="#fff4da" />
-      <directionalLight position={[-10, 12, -8]} intensity={0.45} color="#9fc8ff" />
+      <ambientLight intensity={0.42} color="#d6f0e2" />
+      <hemisphereLight color="#d8f3e6" groundColor="#072418" intensity={0.62} />
+      <directionalLight position={[12, 24, 10]} intensity={1.25} color="#fff4da" />
+      <directionalLight position={[-10, 12, -8]} intensity={0.4} color="#9fc8ff" />
 
       {/* Surrounding turf so the pitch never shows a hard edge. */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]}>

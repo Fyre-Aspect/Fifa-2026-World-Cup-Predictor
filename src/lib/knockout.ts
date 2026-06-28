@@ -11,7 +11,38 @@ import { mostLikelyDecisiveScore, type Scoreline } from '@/model/scoreline';
  * advances, and the winners are paired into the next round all the way to the
  * final. Pure given (matches, ratings, weights), so it re-runs live whenever the
  * model weights change.
+ *
+ * Rounds follow the **official FIFA 2026 bracket tree**, not left-to-right
+ * adjacency: each later match is fed by two specific earlier matches, and the
+ * two halves only cross at the semi-finals. The feeder maps below index into the
+ * canonical match order (R32 = matches 73–88, R16 = 89–96, QF = 97–100).
  */
+const R16_FEEDERS: ReadonlyArray<readonly [number, number]> = [
+  [1, 4], // 89: W74 v W77
+  [0, 2], // 90: W73 v W75
+  [3, 5], // 91: W76 v W78
+  [6, 7], // 92: W79 v W80
+  [10, 11], // 93: W83 v W84
+  [8, 9], // 94: W81 v W82
+  [13, 15], // 95: W86 v W88
+  [12, 14], // 96: W85 v W87
+];
+const QF_FEEDERS: ReadonlyArray<readonly [number, number]> = [
+  [0, 1], // 97: W89 v W90
+  [4, 5], // 98: W93 v W94
+  [2, 3], // 99: W91 v W92
+  [6, 7], // 100: W95 v W96
+];
+const SF_FEEDERS: ReadonlyArray<readonly [number, number]> = [
+  [0, 1], // 101: W97 v W98
+  [2, 3], // 102: W99 v W100
+];
+
+/** Trailing sequence number of an id like `PR32-07` or `R32-7` (→ 7). */
+function seqNum(id: string): number {
+  const n = parseInt(id.slice(id.lastIndexOf('-') + 1), 10);
+  return Number.isFinite(n) ? n : 0;
+}
 
 export interface ProjectedTie {
   id: string;
@@ -105,38 +136,30 @@ export function projectKnockouts(
     return { id, stage, kickoff, cityId, homeId, awayId, prediction, scoreline, winnerId, aet };
   }
 
-  // Round of 32 — teams already seeded onto the stored matches.
-  const r32Stored = byStage('round32');
+  // Round of 32 — teams already seeded onto the stored matches, in canonical
+  // match order (73–88) so the bracket-tree feeder indices line up.
+  const r32Stored = byStage('round32').sort((a, b) => seqNum(a.id) - seqNum(b.id));
   const round32 = r32Stored.map((m, i) =>
     tie(m, `R32-${i + 1}`, 'round32', m.homeTeamId, m.awayTeamId),
   );
 
-  // Round of 16 — pair adjacent R32 winners.
+  // Round of 16 — official feeder pairs of R32 winners.
   const r16Stored = byStage('round16');
-  const round16: ProjectedTie[] = [];
-  for (let i = 0; i < 8; i++) {
-    const a = round32[i * 2]?.winnerId ?? null;
-    const b = round32[i * 2 + 1]?.winnerId ?? null;
-    round16.push(tie(r16Stored[i], `R16-${i + 1}`, 'round16', a, b));
-  }
+  const round16 = R16_FEEDERS.map(([a, b], i) =>
+    tie(r16Stored[i], `R16-${i + 1}`, 'round16', round32[a]?.winnerId ?? null, round32[b]?.winnerId ?? null),
+  );
 
-  // Quarter-finals — pair adjacent R16 winners.
+  // Quarter-finals — official feeder pairs of R16 winners.
   const qfStored = byStage('quarter');
-  const quarter: ProjectedTie[] = [];
-  for (let i = 0; i < 4; i++) {
-    const a = round16[i * 2]?.winnerId ?? null;
-    const b = round16[i * 2 + 1]?.winnerId ?? null;
-    quarter.push(tie(qfStored[i], `QF-${i + 1}`, 'quarter', a, b));
-  }
+  const quarter = QF_FEEDERS.map(([a, b], i) =>
+    tie(qfStored[i], `QF-${i + 1}`, 'quarter', round16[a]?.winnerId ?? null, round16[b]?.winnerId ?? null),
+  );
 
-  // Semi-finals.
+  // Semi-finals — the two bracket halves finally cross here.
   const sfStored = byStage('semi');
-  const semi: ProjectedTie[] = [];
-  for (let i = 0; i < 2; i++) {
-    const a = quarter[i * 2]?.winnerId ?? null;
-    const b = quarter[i * 2 + 1]?.winnerId ?? null;
-    semi.push(tie(sfStored[i], `SF-${i + 1}`, 'semi', a, b));
-  }
+  const semi = SF_FEEDERS.map(([a, b], i) =>
+    tie(sfStored[i], `SF-${i + 1}`, 'semi', quarter[a]?.winnerId ?? null, quarter[b]?.winnerId ?? null),
+  );
 
   // Final + third-place play-off.
   const final = semi.length === 2 ? tie(byStage('final')[0], 'FIN', 'final', semi[0].winnerId, semi[1].winnerId) : null;

@@ -25,6 +25,15 @@ export function FieldBackground() {
           <PitchFieldScene />
         </Suspense>
       )}
+      {/* Readability scrim: a gentle dark wash, heavier at the top where the page
+          headers sit, so text stays legible over the bright grass. */}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage:
+            'linear-gradient(180deg, rgba(6,10,24,0.55) 0%, rgba(6,10,24,0.32) 22%, rgba(6,10,24,0.28) 100%)',
+        }}
+      />
     </div>
   );
 }

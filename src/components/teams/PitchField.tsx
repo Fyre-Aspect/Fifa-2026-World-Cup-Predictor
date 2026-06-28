@@ -15,7 +15,7 @@ export function PitchField() {
         className="absolute inset-0"
         style={{
           backgroundImage:
-            'linear-gradient(180deg,#0f6b41 0%,#0c5836 40%,#0a3f29 72%,#070b1c 100%)',
+            'linear-gradient(180deg,#0c5836 0%,#0a4a2e 40%,#083526 72%,#070b1c 100%)',
         }}
       />
       {/* Mowed stripes. */}

@@ -68,7 +68,9 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Oswald', 'Inter', 'sans-serif'],
+        // Archivo — a sturdy, sporty grotesque. Heavier and punchier than the old
+        // condensed Oswald, so headlines and the scoreboard numbers pop.
+        display: ['Archivo', 'Inter', 'sans-serif'],
       },
       fontVariantNumeric: {
         tabular: 'tabular-nums',

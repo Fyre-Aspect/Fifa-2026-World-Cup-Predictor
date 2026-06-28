@@ -48,16 +48,16 @@ export function TeamsView() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: 'easeOut' }}
-          className="mb-6"
+          className="mb-6 text-pop"
         >
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="font-display text-3xl font-700 tracking-tight text-offwhite sm:text-4xl">
+            <h1 className="font-display text-4xl font-800 tracking-tight text-offwhite sm:text-5xl">
               Teams
             </h1>
             <LivePill />
           </div>
           <div className="mt-3 h-0.5 w-24 rule-fifa" />
-          <p className="mt-3 max-w-2xl text-sm text-offwhite-dim">
+          <p className="mt-3 max-w-2xl text-sm font-500 text-offwhite">
             All {ranked.length} teams, strongest first. The rating is the model&rsquo;s
             measure of each team&rsquo;s strength — it goes up or down as they win and
             lose, so the order shifts as games are played. Tap any team to see more.

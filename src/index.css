@@ -15,6 +15,8 @@
 
   body {
     @apply bg-pitch-950 text-offwhite font-sans antialiased;
+    /* Slightly heavier default text so everything reads with more weight. */
+    font-weight: 450;
     margin: 0;
     overflow-x: hidden;
     /* Stadium-twilight base: deep navy lit by faint FIFA-26 magenta + cyan glows.
@@ -144,6 +146,14 @@
   }
   .interactive:hover {
     @apply scale-[1.02];
+  }
+
+  /* Lifts text off the busy pitch background so it stays legible. Inherited, so
+     adding it to a header tints every label inside. */
+  .text-pop {
+    text-shadow:
+      0 1px 2px rgba(3, 6, 16, 0.7),
+      0 2px 14px rgba(3, 6, 16, 0.45);
   }
 
   /* Thin FIFA-spectrum rule, e.g. under section headers. */

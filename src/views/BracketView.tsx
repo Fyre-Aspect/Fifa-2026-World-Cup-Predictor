@@ -41,13 +41,13 @@ export function BracketView() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="mb-5"
+        className="mb-5 text-pop"
       >
-        <h1 className="font-display text-3xl font-700 tracking-tight text-offwhite sm:text-4xl">
+        <h1 className="font-display text-4xl font-800 tracking-tight text-offwhite sm:text-5xl">
           Knockout bracket
         </h1>
         <div className="mt-3 h-0.5 w-24 rule-fifa" />
-        <p className="mt-3 max-w-2xl text-sm text-offwhite-dim">
+        <p className="mt-3 max-w-2xl text-sm font-500 text-offwhite">
           {mode === 'projected'
             ? 'A predicted bracket: we take who is on course to qualify from each group and play it out to a winner. It updates as results come in — a prediction, not the real draw.'
             : 'The real bracket. Slots stay empty until results and the draw decide who fills them.'}
