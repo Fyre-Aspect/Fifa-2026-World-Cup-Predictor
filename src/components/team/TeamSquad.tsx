@@ -1,7 +1,14 @@
 import { cn } from '@/lib/cn';
 import type { Team } from '@/types/domain';
 import type { Player, Position } from '@/data/squads';
-import { effectiveRating, fullSquad, hasSquad, squadStrength, topLeagueCount } from '@/model/squad';
+import {
+  effectiveRating,
+  fullSquad,
+  hasSquad,
+  squadStrength,
+  startingEleven,
+  topLeagueCount,
+} from '@/model/squad';
 
 const LINES: { key: Position; label: string }[] = [
   { key: 'GK', label: 'Goalkeeper' },
@@ -18,9 +25,10 @@ const POSITION_TONE: Record<Position, string> = {
 };
 
 /**
- * The team's squad on its own page — the curated players laid out like a team
- * sheet (goalkeeper, defence, midfield, attack), each with club, league and
- * ability rating. Teams without curated player data say so plainly.
+ * The team's squad on its own page — laid out like a team sheet. When the full
+ * squad is curated it splits into a projected Starting XI and the substitutes;
+ * smaller (six-player) squads just list everyone. Each player shows club, league,
+ * a league-adjusted ability rating, and recent club form.
  */
 export function TeamSquad({ team }: { team: Team }) {
   const players = fullSquad(team.id);
@@ -38,6 +46,10 @@ export function TeamSquad({ team }: { team: Team }) {
   }
 
   const strength = squadStrength(team.id);
+  const xi = startingEleven(team.id);
+  const xiSet = new Set(xi);
+  const subs = players.filter((p) => !xiSet.has(p));
+  const splitXI = xi.length >= 11;
 
   return (
     <section className="surface mt-4 p-5">
@@ -51,13 +63,58 @@ export function TeamSquad({ team }: { team: Team }) {
         </div>
       </div>
 
-      <div className="mt-4 space-y-4">
+      {splitXI ? (
+        <>
+          <SquadBlock title="Starting XI" note="projected 4-3-3" players={xi} />
+          {subs.length > 0 && <SquadBlock title="Substitutes" players={subs} className="mt-6" />}
+        </>
+      ) : (
+        <SquadBlock players={players} className="mt-4" />
+      )}
+
+      <p className="mt-4 text-[11px] leading-relaxed text-offwhite-faint">
+        Ratings are league-adjusted — the same ability counts for more in a stronger division — and
+        feed the squad-strength input behind every predicted scoreline.
+      </p>
+    </section>
+  );
+}
+
+function SectionHeading({ count }: { count?: number }) {
+  return (
+    <h2 className="text-sm font-700 uppercase tracking-wider text-offwhite-dim">
+      Squad{count != null ? ` · ${count} players` : ''}
+    </h2>
+  );
+}
+
+/** A labelled set of players, grouped by position line. */
+function SquadBlock({
+  title,
+  note,
+  players,
+  className,
+}: {
+  title?: string;
+  note?: string;
+  players: Player[];
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      {title && (
+        <div className="mb-2 flex items-baseline gap-2">
+          <h3 className="text-[11px] font-700 uppercase tracking-wider text-offwhite">{title}</h3>
+          {note && <span className="text-[10px] text-offwhite-faint">{note}</span>}
+        </div>
+      )}
+      <div className="space-y-3">
         {LINES.map(({ key, label }) => {
           const line = players.filter((p) => p.position === key);
           if (line.length === 0) return null;
           return (
             <div key={key}>
-              <p className="mb-1.5 text-[11px] font-700 uppercase tracking-wider text-offwhite-faint">
+              <p className="mb-1.5 text-[10px] font-700 uppercase tracking-wider text-offwhite-faint">
                 {label}
               </p>
               <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
@@ -69,21 +126,7 @@ export function TeamSquad({ team }: { team: Team }) {
           );
         })}
       </div>
-
-      <p className="mt-4 text-[11px] leading-relaxed text-offwhite-faint">
-        A representative spine of each team&rsquo;s key players. The rating shown is league-adjusted —
-        the same ability counts for more in a stronger division — and it feeds the squad-strength
-        input behind every predicted scoreline.
-      </p>
-    </section>
-  );
-}
-
-function SectionHeading({ count }: { count?: number }) {
-  return (
-    <h2 className="text-sm font-700 uppercase tracking-wider text-offwhite-dim">
-      Squad{count != null ? ` · ${count} key players` : ''}
-    </h2>
+    </div>
   );
 }
 
@@ -104,7 +147,21 @@ function PlayerRow({ player }: { player: Player }) {
           {player.club} · {player.league}
         </p>
       </div>
-      <span className="display-num shrink-0 rounded-md bg-gold-400/15 px-2 py-1 text-sm font-700 text-gold-300">
+      {player.form != null && (
+        <div
+          className="hidden w-14 shrink-0 sm:block"
+          title={`Recent club form ${player.form}/100`}
+        >
+          <div className="text-right text-[9px] uppercase tracking-wide text-offwhite-faint">Form</div>
+          <div className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-pitch-950/60">
+            <div className="h-full rounded-full bg-fifa-spectrum" style={{ width: `${player.form}%` }} />
+          </div>
+        </div>
+      )}
+      <span
+        className="display-num shrink-0 rounded-md bg-gold-400/15 px-2 py-1 text-sm font-700 text-gold-300"
+        title="League-adjusted ability rating"
+      >
         {Math.round(effectiveRating(player))}
       </span>
     </li>

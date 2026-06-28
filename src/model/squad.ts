@@ -116,6 +116,29 @@ export function fullSquad(teamId: string | null | undefined): Player[] {
   );
 }
 
+/**
+ * A projected first-choice XI in a 4-3-3 shape: the top-rated keeper, four
+ * defenders, three midfielders and three forwards (topped up with the best
+ * outfielders left if a line is short). Empty when the squad is too small to
+ * field a full eleven, so the team sheet only splits XI vs subs when it can.
+ */
+export function startingEleven(teamId: string | null | undefined): Player[] {
+  const squad = fullSquad(teamId); // already sorted by position, then rating
+  if (squad.length < 11) return [];
+  const line = (pos: Player['position'], n: number) =>
+    squad.filter((p) => p.position === pos).slice(0, n);
+  const xi = [...line('GK', 1), ...line('DF', 4), ...line('MF', 3), ...line('FW', 3)];
+  if (xi.length < 11) {
+    const chosen = new Set(xi);
+    const fillers = squad
+      .filter((p) => !chosen.has(p) && p.position !== 'GK')
+      .sort((a, b) => effectiveRating(b) - effectiveRating(a))
+      .slice(0, 11 - xi.length);
+    xi.push(...fillers);
+  }
+  return xi;
+}
+
 /** Count of a team's key players plying their trade in a top-5 European league. */
 export function topLeagueCount(teamId: string | null | undefined): number {
   if (!teamId) return 0;
