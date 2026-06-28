@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 import { Flag } from '@/components/ui/Flag';
+import { TrophyIcon } from '@/components/ui/Icons';
 import { cn } from '@/lib/cn';
 import { projectKnockouts, type ProjectedTie } from '@/lib/knockout';
 import { STAGE_LABEL } from '@/lib/tournament';
@@ -71,8 +72,8 @@ export function KnockoutsView() {
         transition={{ duration: 0.4 }}
         className="surface-raised mb-8 flex items-center gap-4 p-5"
       >
-        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-gold-400/15 text-2xl">
-          🏆
+        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-gold-400/15 text-gold-300">
+          <TrophyIcon className="h-6 w-6" />
         </div>
         <div className="min-w-0">
           <p className="text-[11px] font-600 uppercase tracking-widest text-gold-300">

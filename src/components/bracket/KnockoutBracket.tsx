@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Flag } from '@/components/ui/Flag';
+import { TrophyIcon } from '@/components/ui/Icons';
 import { cn } from '@/lib/cn';
 import type { ProjectedKnockouts, ProjectedTie } from '@/lib/knockout';
 import type { Team } from '@/types/domain';
@@ -62,7 +63,9 @@ export function KnockoutBracket({
           </h3>
           <div className="flex flex-1 flex-col justify-center">
             <div className="surface-raised rounded-xl border border-gold-400/40 bg-gold-400/5 p-4 text-center">
-              <div className="text-2xl">🏆</div>
+              <div className="mb-1 flex justify-center text-gold-300">
+                <TrophyIcon className="h-6 w-6" />
+              </div>
               <div className="mt-1 flex items-center justify-center gap-1.5">
                 <Flag code={champion?.flagCode} title={champion?.name} className="h-4 w-6" />
                 <span className="font-display text-base font-700 text-offwhite">

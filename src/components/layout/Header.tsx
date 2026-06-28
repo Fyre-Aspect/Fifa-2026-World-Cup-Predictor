@@ -52,7 +52,6 @@ export function Header() {
 
         <div className="flex items-center gap-2 sm:gap-3">
           <DataSourceBadge />
-          <HonestyBadge />
           <NotificationBell />
           <DebugToggle />
         </div>
@@ -104,18 +103,5 @@ function DebugToggle() {
         <circle cx="8" cy="17" r="2.2" />
       </svg>
     </button>
-  );
-}
-
-/** Persistent reminder that everything here is model output, not fact. */
-function HonestyBadge() {
-  return (
-    <span
-      className="hidden items-center gap-1.5 rounded-full border border-gold-400/30 bg-gold-400/5 px-3 py-1 text-[11px] font-500 uppercase tracking-wide text-gold-300 sm:inline-flex"
-      title="Every number on this site is a model estimate with uncertainty, not a fact."
-    >
-      <span className="h-1.5 w-1.5 rounded-full bg-gold-400" />
-      Model output, not fact
-    </span>
   );
 }

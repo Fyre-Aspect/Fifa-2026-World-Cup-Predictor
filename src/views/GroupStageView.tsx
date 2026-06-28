@@ -7,8 +7,6 @@ import { cn } from '@/lib/cn';
 import { groupStandings, type StandingRow } from '@/lib/standings';
 import { ELO_SEED } from '@/model/eloSeed';
 import { mostLikelyScore } from '@/model/scoreline';
-import { argmaxOutcome } from '@/model/probability';
-import { labelFromScore } from '@/model/scoring';
 import { formatKickoff } from '@/lib/tournament';
 import { StatusDot } from '@/components/match/MatchStatusBadge';
 import { LiveNowBanner } from '@/components/match/LiveNowBanner';
@@ -81,7 +79,7 @@ export function GroupStageView() {
       <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-offwhite-faint">
         <span className="font-600 uppercase tracking-wide">Key</span>
         <Legend status="live" label="Being played now" />
-        <Legend status="finished" label="Played · predicted vs actual" />
+        <Legend status="finished" label="Played · final score" />
         <Legend status="scheduled" label="Upcoming · predicted score" />
       </div>
 
@@ -213,21 +211,13 @@ function FixtureRow({
 }) {
   const home = match.homeTeamId ? teams[match.homeTeamId] : undefined;
   const away = match.awayTeamId ? teams[match.awayTeamId] : undefined;
-  const predicted = prediction ? mostLikelyScore(prediction.xgHome, prediction.xgAway) : null;
   const scheduled = match.status === 'scheduled';
-
-  // How it was predicted: did the pre-match favourite match the result?
-  const predMark =
-    match.status === 'finished' && match.score && prediction
-      ? argmaxOutcome(prediction) === labelFromScore(match.score)
-      : null;
+  // Predicted scoreline is only shown for upcoming games — never next to a final.
+  const predicted = scheduled && prediction ? mostLikelyScore(prediction.xgHome, prediction.xgAway) : null;
 
   return (
     <Link
       to={`/match/${match.id}`}
-      title={
-        predicted && !scheduled ? `Predicted ${predicted.home}–${predicted.away}` : undefined
-      }
       className="group flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-pitch-700/40"
     >
       <StatusDot status={match.status} className="mt-0.5" />
@@ -259,13 +249,6 @@ function FixtureRow({
           <span className="font-700 text-red-300">{match.minute ? `${match.minute}'` : 'LIVE'}</span>
         ) : scheduled ? (
           formatKickoff(match.kickoff)
-        ) : predicted && predMark != null ? (
-          <span
-            title={`Predicted ${predicted.home}–${predicted.away} · ${predMark ? 'right' : 'wrong'}`}
-            className={cn('display-num', predMark ? 'text-emerald-300' : 'text-red-300/80')}
-          >
-            {predMark ? '✓' : '✗'} {predicted.home}–{predicted.away}
-          </span>
         ) : (
           'FT'
         )}

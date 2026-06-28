@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { matchCommentary, type CommentaryType } from '@/lib/commentary';
+import { BallIcon } from '@/components/ui/Icons';
 import { cn } from '@/lib/cn';
 import type { Match } from '@/types/domain';
 
@@ -73,7 +74,9 @@ export function LiveCommentary({
                         : 'text-offwhite-dim',
                   )}
                 >
-                  {e.type === 'goal' && <span className="mr-1">⚽</span>}
+                  {e.type === 'goal' && (
+                    <BallIcon className="mr-1 inline-block h-3.5 w-3.5 -translate-y-px text-gold-200" />
+                  )}
                   {e.text}
                 </p>
               </div>

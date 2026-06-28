@@ -4,8 +4,6 @@ import { Flag } from '@/components/ui/Flag';
 import { cn } from '@/lib/cn';
 import { formatKickoff } from '@/lib/tournament';
 import { mostLikelyScore } from '@/model/scoreline';
-import { argmaxOutcome } from '@/model/probability';
-import { labelFromScore } from '@/model/scoring';
 import { MatchStatusBadge } from '@/components/match/MatchStatusBadge';
 import type { Match } from '@/types/domain';
 
@@ -16,12 +14,11 @@ export function MatchRow({ match }: { match: Match }) {
   const home = match.homeTeamId ? teams[match.homeTeamId] : undefined;
   const away = match.awayTeamId ? teams[match.awayTeamId] : undefined;
 
-  const predicted = prediction
-    ? mostLikelyScore(prediction.xgHome, prediction.xgAway)
-    : null;
-  const predRight =
-    match.status === 'finished' && match.score && prediction
-      ? argmaxOutcome(prediction) === labelFromScore(match.score)
+  // Only show a predicted score for games that haven't kicked off yet — never
+  // alongside a final result, where it just reads as a contradiction.
+  const predicted =
+    match.status === 'scheduled' && prediction
+      ? mostLikelyScore(prediction.xgHome, prediction.xgAway)
       : null;
 
   return (
@@ -50,17 +47,8 @@ export function MatchRow({ match }: { match: Match }) {
         <div className="mt-1 text-[11px] text-offwhite-faint">
           {match.status === 'scheduled' ? formatKickoff(match.kickoff) : null}
           {predicted && (
-            <span
-              className={cn(
-                'display-num',
-                predRight === true && 'text-emerald-300',
-                predRight === false && 'text-red-300/80',
-              )}
-              title={`Model predicted ${predicted.home}–${predicted.away}`}
-            >
-              {match.status === 'scheduled' ? ' · ' : ''}
-              Predicted {predicted.home}–{predicted.away}
-              {predRight === true ? ' ✓' : predRight === false ? ' ✗' : ''}
+            <span className="display-num">
+              {' · '}Predicted {predicted.home}–{predicted.away}
             </span>
           )}
         </div>
