@@ -12,18 +12,25 @@ probability of a home win, draw, or away win, plus an expected number of goals
 for each side. It basically uses these aspects:
 
 - **Team strength** — an Elo rating built from the last few years of results.
+![alt text](image.png)
+![alt text](image-1.png)
+![alt text](image-2.png)
+![alt text](image-3.png)
 - **Recent form** — each team's last handful of matches, weighted toward the
   most recent.
 - **Betting markets** — implied odds from Polymarket and from bookmakers, with
   the built-in margin stripped out.
 
-So after each prediction it is updated real time using an API with the actual scores after the game affectign both the bracket, groupstage and each indivdual team elo. 
 
+
+So after each prediction it is updated real time using an API with the actual scores after the game affectign both the bracket, groupstage and each indivdual team elo. 
+![alt text](image-5.png)
+![alt text](image-4.png)
 ## Built with
 
 React, TypeScript and Vite for the app, Tailwind for styling, three.js for the
 3D pieces, and Zustand for state. Data is validated with Zod whcih was assisted with claude research. THe backend is just basic and running on vite easily. 
-
+![alt text](image-6.png)
 ## Where AI helped
 
 No lie first I didnt want to upload this to hackatime adn hack club horizon but i was like its a cool project adn I struggled with dev server a lot during the end and i might as well share it so a major portion is technically AI. However eveyrhting liek the visuals and 3D files and idea of getting that there was mine and I had AI basically just refine the models and do the hard logistics aspects. 
