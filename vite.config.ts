@@ -4,7 +4,7 @@ import { fileURLToPath, URL } from 'node:url';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 /**
- * Dev-only plugin: mount the project's Hono API (api/[[...route]].ts) directly
+ * Dev-only plugin: mount the project's Hono API (api/index.ts) directly
  * inside Vite's dev server so `/api/*` is handled in-process. Previously dev
  * proxied /api to http://localhost:3000 (a `vercel dev` server), which spammed
  * ECONNREFUSED when that server wasn't running. Now the same serverless handler
@@ -23,7 +23,7 @@ function honoApiDev(): Plugin {
         if (!path.startsWith('/api')) return next();
         try {
           // Vite transpiles the TS handler on the fly and gives us its exports.
-          const mod = await server.ssrLoadModule('/api/[...route].ts');
+          const mod = await server.ssrLoadModule('/api/index.ts');
           const app = mod.app as { fetch: (request: Request) => Promise<Response> };
 
           const host = req.headers.host ?? 'localhost';
