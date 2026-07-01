@@ -89,6 +89,20 @@ export function projectedR32Matches(
     return code[0] === '1' ? (winners[letter] ?? null) : (runners[letter] ?? null);
   };
 
+  // Prefer the *real* official draw when the API has published it: once the
+  // knockout fixtures exist, they carry the actual matchups (and, once played,
+  // real scores/winners), including the true third-place allocation — which our
+  // greedy `assignThirds` only approximates. We trust those fixtures only when
+  // they demonstrably encode the official bracket: every determined slot (both
+  // sides a fixed winner/runner) must appear as a real fixture. Otherwise (e.g.
+  // the bundled mock's generic strength seed) we fall back to seeding onto the
+  // skeleton ourselves, so the projected tree still follows FIFA's shape.
+  const realR32 = matches.filter(
+    (m) => m.stage === 'round32' && m.homeTeamId && m.awayTeamId,
+  );
+  const drawn = realDrawR32(realR32, resolve);
+  if (drawn) return drawn;
+
   const out: Match[] = [];
   for (let i = 0; i < 16; i++) {
     const [homeCode, awayCode] = R32_POSITIONS[i];
@@ -112,6 +126,64 @@ export function projectedR32Matches(
 }
 
 /**
+ * If the supplied Round-of-32 fixtures encode the *official* 2026 draw, returns
+ * them in canonical slot order (matches 73–88), oriented so the fixed
+ * winner/runner side is home; otherwise returns null so the caller seeds the
+ * skeleton itself.
+ *
+ * The check: every fully-determined slot (both sides a fixed winner/runner, no
+ * third-place placeholder) must be present as a real fixture pairing exactly
+ * those two teams. Generic seedings (the mock) won't satisfy this, so we never
+ * mistake them for the real draw.
+ */
+function realDrawR32(
+  realR32: Match[],
+  resolve: (code: string, host: string) => string | null,
+): Match[] | null {
+  const byTeam = new Map<string, Match>();
+  for (const m of realR32) {
+    if (m.homeTeamId) byTeam.set(m.homeTeamId, m);
+    if (m.awayTeamId) byTeam.set(m.awayTeamId, m);
+  }
+
+  const teamsOf = (m: Match) => new Set([m.homeTeamId, m.awayTeamId]);
+
+  for (const [homeCode, awayCode] of R32_POSITIONS) {
+    if (homeCode === '3' || awayCode === '3') continue; // third slots verified via their host
+    const home = resolve(homeCode, '');
+    const away = resolve(awayCode, '');
+    if (!home || !away) return null;
+    const fx = byTeam.get(home);
+    if (!fx || !teamsOf(fx).has(away)) return null; // not the official draw
+  }
+
+  // Confirmed: build every slot from its real fixture, keyed by the fixed
+  // winner/runner side (the home code is always `1x`/`2x`, never `3`).
+  const out: Match[] = [];
+  for (const [homeCode] of R32_POSITIONS) {
+    const host = homeCode[0] === '1' ? homeCode.slice(1) : '';
+    const anchor = resolve(homeCode, host);
+    const fx = anchor ? byTeam.get(anchor) : undefined;
+    if (!fx) return null; // an expected qualifier has no fixture — bail to seeding
+    out.push(orientHome(fx, anchor));
+  }
+  return out;
+}
+
+/** Returns the match with `anchor` as the home side (swapping score/winner if needed). */
+function orientHome(m: Match, anchor: string | null): Match {
+  if (!anchor || m.homeTeamId === anchor) return m;
+  return {
+    ...m,
+    homeTeamId: m.awayTeamId,
+    awayTeamId: m.homeTeamId,
+    score: m.score ? { home: m.score.away, away: m.score.home } : null,
+    penalties: m.penalties ? { home: m.penalties.away, away: m.penalties.home } : null,
+    winner: m.winner === 'home' ? 'away' : m.winner === 'away' ? 'home' : m.winner,
+  };
+}
+
+/**
  * Allocates the eight best third-placed teams to the eight third slots, each
  * hosted by a group winner. Mirrors FIFA's one hard rule — a third can't be
  * drawn against a side from its own group — by greedily giving each slot the
@@ -127,20 +199,4 @@ function assignThirds(thirds: ThirdRow[], hosts: string[]): Record<string, strin
     pool.splice(pick, 1);
   }
   return assigned;
-}
-
-/**
- * Returns the matches array to feed `projectKnockouts` for a *projected* tree:
- * the official-skeleton seeded R32 + the real later-round fixtures (templates).
- * If qualifiers can't be determined yet, returns the input unchanged so the
- * caller naturally falls back to the official (TBD) bracket.
- */
-export function projectedBracketMatches(
-  matches: Match[],
-  teams: Record<string, Team>,
-  ratings: EloRatings,
-): Match[] {
-  const r32 = projectedR32Matches(matches, teams, ratings);
-  if (r32.length === 0) return matches;
-  return [...r32, ...matches.filter((m) => m.stage !== 'round32')];
 }

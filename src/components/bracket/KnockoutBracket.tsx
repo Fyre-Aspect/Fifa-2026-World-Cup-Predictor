@@ -164,24 +164,40 @@ function TieCard({
   const home = tie.homeId ? teams[tie.homeId] : undefined;
   const away = tie.awayId ? teams[tie.awayId] : undefined;
 
+  // Show a score for real results (either view) and for projected ties (forecast
+  // view). Undecided ties in the official view stay blank.
+  const showScore = tie.scoreline != null && (tie.played || tie.live || mode === 'projected');
+  const note = tie.penalties
+    ? `${tie.penalties.home}–${tie.penalties.away} pens`
+    : tie.aet && showScore
+      ? 'after extra time'
+      : null;
+
   const body = (
     <div className="surface rounded-lg p-1.5">
+      {(tie.played || tie.live) && (
+        <div className="mb-0.5 flex items-center justify-between px-1">
+          <span className="text-[7px] font-700 uppercase tracking-wide text-gold-300/80">
+            {tie.live ? 'Live' : 'Result'}
+          </span>
+        </div>
+      )}
       <TeamRow
         team={home}
         label={tie.homeLabel}
         win={tie.winnerId != null && tie.winnerId === tie.homeId}
-        goals={mode === 'projected' ? tie.scoreline?.home : undefined}
+        goals={showScore ? tie.scoreline?.home : undefined}
       />
       <div className="my-0.5 h-px bg-white/5" />
       <TeamRow
         team={away}
         label={tie.awayLabel}
         win={tie.winnerId != null && tie.winnerId === tie.awayId}
-        goals={mode === 'projected' ? tie.scoreline?.away : undefined}
+        goals={showScore ? tie.scoreline?.away : undefined}
       />
-      {mode === 'projected' && tie.aet && (
+      {note && (
         <p className="mt-0.5 text-center text-[8px] font-600 uppercase tracking-wide text-offwhite-faint">
-          after extra time
+          {note}
         </p>
       )}
     </div>

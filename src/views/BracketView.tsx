@@ -1,18 +1,18 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
-import { projectedBracketMatches, projectedR32Matches } from '@/lib/projectedBracket';
-import { projectKnockouts, officialBracketSkeleton } from '@/lib/knockout';
+import { projectKnockouts } from '@/lib/knockout';
 import { KnockoutBracket } from '@/components/bracket/KnockoutBracket';
 import { cn } from '@/lib/cn';
 
 type Mode = 'projected' | 'official';
 
 /**
- * Knockout bracket — a flat, scannable tournament tree (no 3D). Two modes:
- *  • Projected — seeds the bracket from the model's projected group qualifiers
- *    and simulates every round to a projected champion.
- *  • Official — the real bracket shape; slots read TBD until the draw fills them.
+ * Knockout bracket — a flat, scannable tournament tree (no 3D). Both modes are
+ * results-first: real, played ties always show their actual matchup and winner.
+ *  • Projected — fills the still-undecided ties with the model and plays on to a
+ *    projected champion.
+ *  • Official — leaves undecided ties open (TBD); only real results advance.
  */
 export function BracketView() {
   const matches = useStore((s) => s.matches);
@@ -23,17 +23,13 @@ export function BracketView() {
 
   const [mode, setMode] = useState<Mode>('projected');
 
-  const proj = useMemo(() => {
-    // Official view: the real FIFA skeleton with its R32 filled by the actual
-    // qualifiers; later rounds stay open until the knockouts are played.
-    if (mode === 'official') {
-      return officialBracketSkeleton(projectedR32Matches(matches, teams, ratings));
-    }
-    // Projected view: fill that same skeleton with the qualifiers and simulate
-    // every round to a champion.
-    const source = projectedBracketMatches(matches, teams, ratings);
-    return projectKnockouts(source, ratings, weights, predictions);
-  }, [mode, matches, teams, ratings, weights, predictions]);
+  const proj = useMemo(
+    () =>
+      projectKnockouts(matches, teams, ratings, weights, predictions, {
+        predict: mode === 'projected',
+      }),
+    [mode, matches, teams, ratings, weights, predictions],
+  );
 
   // Only ties backed by a real fixture (both teams set) link to a detail page.
   const linkableIds = useMemo(

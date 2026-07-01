@@ -16,11 +16,23 @@ const fdTeamRef = z.object({
   crest: z.string().nullable().optional(),
 });
 
+const fdScorePair = z.object({
+  home: z.number().nullable(),
+  away: z.number().nullable(),
+});
+
 const fdScore = z.object({
-  fullTime: z.object({
-    home: z.number().nullable(),
-    away: z.number().nullable(),
-  }),
+  // "HOME_TEAM" | "AWAY_TEAM" | "DRAW" | null — authoritative for knockout ties
+  // decided on penalties, where fullTime alone can't reveal who advanced.
+  winner: z.string().nullable().optional(),
+  // "REGULAR" | "EXTRA_TIME" | "PENALTY_SHOOTOUT"
+  duration: z.string().nullable().optional(),
+  fullTime: fdScorePair,
+  // Present on knockout ties that went beyond 90'. For shootouts football-data
+  // folds the shootout into fullTime, so we reconstruct the real 90'/120' score.
+  regularTime: fdScorePair.nullable().optional(),
+  extraTime: fdScorePair.nullable().optional(),
+  penalties: fdScorePair.nullable().optional(),
 });
 
 const fdMatch = z.object({

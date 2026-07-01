@@ -24,8 +24,8 @@ export function KnockoutsView() {
   const predictions = useStore((s) => s.predictions);
 
   const proj = useMemo(
-    () => projectKnockouts(matches, ratings, weights, predictions),
-    [matches, ratings, weights, predictions],
+    () => projectKnockouts(matches, teams, ratings, weights, predictions),
+    [matches, teams, ratings, weights, predictions],
   );
 
   // Only ties backed by a real fixture (both teams already set) are linkable to a
@@ -59,9 +59,9 @@ export function KnockoutsView() {
         </h1>
         <div className="mt-3 h-0.5 w-24 rule-fifa" />
         <p className="mt-3 text-offwhite-dim">
-          Seeded from the projected group finishers, then simulated round by round.
-          These are model projections, not the drawn bracket — they shift as group
-          results and weights change.
+          Played ties show their real result and advance the team that actually
+          went through; everything still undecided is simulated round by round to a
+          projected champion. It updates as results come in.
         </p>
       </motion.header>
 
@@ -118,21 +118,47 @@ function TieCard({
   const home = tie.homeId ? teams[tie.homeId] : undefined;
   const away = tie.awayId ? teams[tie.awayId] : undefined;
   const pred = tie.prediction;
+  const decided = tie.played || tie.live;
 
-  // Advancement probability = win + half the draw mass (penalty-shootout proxy).
-  const homeAdvance = pred ? pred.homeWin + pred.draw / 2 : 0.5;
-  const awayAdvance = pred ? pred.awayWin + pred.draw / 2 : 0.5;
+  // Once a tie is played the "advancement" is the real outcome (100 / 0);
+  // otherwise it's the model's win + half the draw mass (shootout proxy).
+  const homeAdvance = decided
+    ? tie.winnerId === tie.homeId
+      ? 1
+      : 0
+    : pred
+      ? pred.homeWin + pred.draw / 2
+      : 0.5;
+  const awayAdvance = decided
+    ? tie.winnerId === tie.awayId
+      ? 1
+      : 0
+    : pred
+      ? pred.awayWin + pred.draw / 2
+      : 0.5;
 
   const body = (
     <div className="surface h-full p-4">
       <div className="mb-2 flex items-center justify-between">
         <span className="text-[10px] font-600 uppercase tracking-wide text-offwhite-faint">
-          {tie.id}
+          {tie.live ? (
+            <span className="text-gold-300">● Live</span>
+          ) : tie.played ? (
+            'Result'
+          ) : (
+            tie.id
+          )}
         </span>
         {tie.scoreline && (
           <span className="display-num text-sm font-700 text-gold-300">
             {tie.scoreline.home}–{tie.scoreline.away}
-            {tie.aet && <span className="ml-1 text-[9px] text-offwhite-faint">AET</span>}
+            {tie.penalties ? (
+              <span className="ml-1 text-[9px] text-offwhite-faint">
+                {tie.penalties.home}–{tie.penalties.away} pens
+              </span>
+            ) : (
+              tie.aet && <span className="ml-1 text-[9px] text-offwhite-faint">AET</span>
+            )}
           </span>
         )}
       </div>

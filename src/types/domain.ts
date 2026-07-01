@@ -68,10 +68,17 @@ export interface Match {
   homeTeamId: string | null;
   awayTeamId: string | null;
   status: MatchStatus;
-  /** Live or final score; null before kickoff. */
+  /** Live or final score; null before kickoff. For ties that went to penalties
+   * this is the score after 90'/120' (the shootout is in `penalties`). */
   score: MatchScore | null;
   /** Live clock in minutes when status === 'live'. */
   minute: number | null;
+  /** Which side advanced from a decided knockout tie; null for group/draw/unplayed. */
+  winner?: 'home' | 'away' | null;
+  /** True when a knockout tie was decided in extra time or on penalties. */
+  aet?: boolean;
+  /** Penalty-shootout score, when the tie went to penalties; null otherwise. */
+  penalties?: MatchScore | null;
 }
 
 /**

@@ -114,7 +114,29 @@ function mapTeam(fd: FdTeam, group: string | null): Team {
 }
 
 function mapMatch(fd: FdMatch): Match {
-  const hasScore = fd.score.fullTime.home != null && fd.score.fullTime.away != null;
+  const s = fd.score;
+  const shootout = s.duration === 'PENALTY_SHOOTOUT';
+
+  // Displayed score: regulation (+ extra time). For shootouts football-data's
+  // fullTime bakes in the shootout (e.g. 1-1 becomes 4-5), so rebuild the 120'
+  // score from regularTime + extraTime and expose the shootout separately.
+  let disp = fd.score.fullTime;
+  if (shootout && s.regularTime) {
+    disp = {
+      home: (s.regularTime.home ?? 0) + (s.extraTime?.home ?? 0),
+      away: (s.regularTime.away ?? 0) + (s.extraTime?.away ?? 0),
+    };
+  }
+  const hasScore = disp.home != null && disp.away != null;
+
+  const penalties =
+    s.penalties && s.penalties.home != null && s.penalties.away != null
+      ? { home: s.penalties.home, away: s.penalties.away }
+      : null;
+
+  const winner =
+    s.winner === 'HOME_TEAM' ? 'home' : s.winner === 'AWAY_TEAM' ? 'away' : null;
+
   return {
     id: String(fd.id),
     stage: mapStage(fd.stage),
@@ -125,9 +147,12 @@ function mapMatch(fd: FdMatch): Match {
     awayTeamId: teamIdOf(fd.awayTeam),
     status: mapStatus(fd.status),
     score: hasScore
-      ? { home: fd.score.fullTime.home as number, away: fd.score.fullTime.away as number }
+      ? { home: disp.home as number, away: disp.away as number }
       : null,
     minute: null,
+    winner,
+    aet: s.duration === 'EXTRA_TIME' || shootout,
+    penalties,
   };
 }
 
