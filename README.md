@@ -1,67 +1,29 @@
-# GroupStage
+# FIFA World Cup 2026 Predictor
 
-An interactive, visually striking **FIFA World Cup 2026** prediction site. 3D is
-the primary navigation surface — a rotating globe of host cities and a
-tournament tree suspended in space. Behind it sits an **honest** prediction
-model that keeps public score of how right it is.
+So basically this thing was made before the world cup started as a tool for me to make predictions on coming group stage games nad stuff and i was like let me share this compoilation of many models to predict the world cup and i share it to hack club. This is all open source right so in the future during like UEFA champions league or premier and stuff I will just change up and get predictions on that too and make it perfect. 
 
-> Every number here is a model estimate with real uncertainty — shown with a
-> confidence band and the model's own running accuracy. Never presented as fact.
+## Why I made it
+As i mentioned earlier I wanted to have accurate predictions based on players performance in the last year in their respective clubs and weighed that into their national team using ELo right adn how that worked is basically helped me understand where realistically statistically where each team lands and currently Argentina is my team adn at the top which was previously before the world cup at 10th place. So this is really good after the beautiful messi hat trick they clinbed and this tool is projecting to see a rematch of 2022 world cup.
 
-## Stack
+## How it works
 
-| Concern        | Choice                                              |
-| -------------- | --------------------------------------------------- |
-| Shell          | Vite + React 18 + TypeScript (strict)               |
-| 3D             | react-three-fiber + drei + three.js                 |
-| Styling        | Tailwind CSS, custom pitch-green / gold theme, dark |
-| Animation      | Framer Motion                                       |
-| State          | Zustand (one store)                                 |
-| Validation     | Zod at every API boundary                           |
-| Data fetching  | TanStack Query (stale-while-revalidate)             |
-| Charts         | Recharts                                            |
-| Backend proxy  | Hono on one Vercel serverless route                 |
-| Model tests    | Vitest                                              |
+The predictions come from a small model that, for each match, produces a
+probability of a home win, draw, or away win, plus an expected number of goals
+for each side. It basically uses these aspects:
 
-Everything runs client-side. The only server code is a tiny key-hiding proxy.
-The whole stack is MIT/BSD-compatible and free; hosting targets Vercel's free
-tier.
+- **Team strength** — an Elo rating built from the last few years of results.
+- **Recent form** — each team's last handful of matches, weighted toward the
+  most recent.
+- **Betting markets** — implied odds from Polymarket and from bookmakers, with
+  the built-in margin stripped out.
 
-## Develop
+So after each prediction it is updated real time using an API with the actual scores after the game affectign both the bracket, groupstage and each indivdual team elo. 
 
-```bash
-npm install
-npm run dev      # app at http://localhost:5173
-npm run build    # type-check (tsc -b) + production build
-npm run test     # Vitest — prediction model logic
-```
+## Built with
 
-Copy `.env.example` to `.env.local` and add free API keys if you want live data.
-Without keys, the app runs entirely on bundled mock/historical data.
+React, TypeScript and Vite for the app, Tailwind for styling, three.js for the
+3D pieces, and Zustand for state. Data is validated with Zod whcih was assisted with claude research. THe backend is just basic and running on vite easily. 
 
-## Views
+## Where AI helped
 
-1. **Globe** (landing) — rotating 3D Earth, host-city pins, countdown, top-3 picks.
-2. **Bracket** — full 3D tournament tree; click a match to flip to its prediction.
-3. **Match detail** — pre-match forecast, live score, post-match analysis.
-4. **Team** — rotating 3D jersey, four years of results, Elo trajectory, predicted run.
-5. **Model dashboard** — running accuracy, weight evolution, calibration plot.
-
-## The model
-
-A probability distribution over (home win, draw, away win) plus expected goals
-for every match, blended from four weighted inputs:
-
-- **Team strength** — Elo from four years of results, K scaled by match importance.
-- **Recent form** — last 10 matches, recency-weighted.
-- **Polymarket** — implied probabilities from the Gamma API, de-vigged.
-- **Bookmakers** — consensus odds from The Odds API, de-vigged.
-
-Starting weights: Elo 30% · form 15% · Polymarket 30% · books 25% (tunable in a
-debug panel). After every finished match the model scores itself with the Brier
-score and nudges the weights toward whichever input was more correct — so the
-predictions evolve as the tournament unfolds.
-
-## License
-
-MIT.
+No lie first I didnt want to upload this to hackatime adn hack club horizon but i was like its a cool project adn I struggled with dev server a lot during the end and i might as well share it so a major portion is technically AI. However eveyrhting liek the visuals and 3D files and idea of getting that there was mine and I had AI basically just refine the models and do the hard logistics aspects. 
